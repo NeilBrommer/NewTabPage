@@ -8,13 +8,11 @@
 	<meta name="author" content="Neil Brommer">
 	<link rel="icon" href="favicon.png">
 
-	<title>New Start</title>
+	<title>Start</title>
 
-	<!-- Bootstrap core CSS -->
-	<link href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
-
-	<!-- Custom styles -->
-	<link href="main.css" rel="stylesheet">
+	<link href="bootstrap/css/bootstrap.min.css" rel="stylesheet"> <!-- Bootstrap core CSS -->
+	<link rel="stylesheet" type="text/css" href="font-awesome/css/font-awesome.css" /> <!-- Font Awesome -->
+	<link href="main.css" rel="stylesheet"> <!-- Custom styles -->
 </head>
 
 <body>
@@ -32,8 +30,8 @@
 			<form class="form-inline mt-2 mt-md-0">
 				<button class="btn btn-light ml-sm-2" type="button" data-Toggle="modal" data-target="#aboutModal">About</button>
 				<button class="btn btn-light ml-sm-2" type="button" data-Toggle="modal" data-target="#importExportModal">Import/Export</button>
-				<button class="btn btn-light ml-sm-2" type="button">Edit</button>
-				<button class="btn btn-light ml-sm-2" type="button" data-toggle="modal" data-target="#newBookmarkModal">Add</button>
+				<button id="btnEdit" class="btn btn-light ml-sm-2" type="button"><span class="fa fa-exclamation-circle"></span> Edit</button>
+				<button class="btn btn-light ml-sm-2" type="button" data-toggle="modal" data-target="#newBookmarkModal"><span class="fa fa-exclamation-circle"></span> Add</button>
 			</form>
 		</div>
 	</nav>
@@ -109,7 +107,7 @@
 	</div>
 
 	<div id="aboutModal" class="modal fade" tabindex="-1" role="dialog">
-		<div class="modal-dialog" role="document">
+		<div class="modal-dialog modal-lg" role="document">
 			<div class="modal-content">
 				<div class="modal-header">
 					<h5 class="modal-title">About</h5>
@@ -123,12 +121,21 @@
 					</p>
 					<p>
 						This page keeps a list of bookmarks separated into groups. It's intended to be used a a new tab page.
-					</p>
-					<p>
 						It uses localStorage to store the list of bookmarks rather than storing them server side.
 					</p>
 					<p>
-						The format for the import/export JSON is:
+						This site uses Danny Care's <a href="https://danny.care/portfolio/bitday/" target="_blank">Bitday</a>
+						wallpapers. The background changes based on the time of day.
+					</p>
+					<p>
+						This site uses <a href="https://getbootstrap.com/" target="_blank">Bootstrap</a>,
+						<a href="https://jquery.com/" target="_blank">JQuery</a>, and
+						<a href="http://fontawesome.io/">Font Awesome</a>.
+					</p>
+					<p>
+						Adding/editing bookmarks and groups is currently not implemented. To add or edit them, you need to use
+						the import/export feature and manually build a JSON object yourself. The format for the import/export
+						JSON is:
 					</p>
 					<pre>
 [

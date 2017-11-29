@@ -18,10 +18,12 @@ $(document).ready(function () {
 		}
 
 
-		// TODO complete adding bookmarks
+		// TODO: complete adding bookmarks
 		window.alert("Adding bookmarks is still incomplete");
 		$("#newBookmarkModal").modal("hide");
 	});
+
+	$("#btnEdit").click(function (e) { window.alert("Editing is currently not implemented"); });
 
 	$("#btnImport").click(importBookmarks);
 	$("#exportText").click(function () {
