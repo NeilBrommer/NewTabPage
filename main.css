@@ -2,14 +2,10 @@ body {
 	width: 100%;
 	height: 100%;
 	background: white no-repeat center center fixed;
-    background-size: cover;
+	background-size: cover;
 
-    tab-size: 4;
-    -moz-tab-size: 4;
-}
-
-#wrapper {
-	width: 60%;
+	tab-size: 4;
+	-moz-tab-size: 4;
 }
 
 .card-header {
@@ -27,43 +23,56 @@ body {
 }
 
 .card {
-    border: 0px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+	border: 0px;
+	box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
 }
 
 .navbar {
-    background: transparent !important;
+	background: transparent !important;
+}
+
+/* set the width of the main container based on element width */
+@media (max-width: 34em) {
+	#wrapper {
+		width: 90%;
+	}
+}
+
+@media (min-width: 34em) {
+	#wrapper {
+		width: 60%;
+	}
 }
 
 /* change the number of columns in card-columns */
 @media (min-width: 34em) {
-    .card-columns {
-        -webkit-column-count: 1;
-        -moz-column-count: 1;
-        column-count: 1;
-    }
+	.card-columns {
+		-webkit-column-count: 1;
+		-moz-column-count: 1;
+		column-count: 1;
+	}
 }
 
 @media (min-width: 48em) {
-    .card-columns {
-        -webkit-column-count: 1;
-        -moz-column-count: 1;
-        column-count: 1;
-    }
+	.card-columns {
+		-webkit-column-count: 1;
+		-moz-column-count: 1;
+		column-count: 1;
+	}
 }
 
 @media (min-width: 62em) {
-    .card-columns {
-        -webkit-column-count: 2;
-        -moz-column-count: 2;
-        column-count: 2;
-    }
+	.card-columns {
+		-webkit-column-count: 2;
+		-moz-column-count: 2;
+		column-count: 2;
+	}
 }
 
 @media (min-width: 75em) {
-    .card-columns {
-        -webkit-column-count: 2;
-        -moz-column-count: 2;
-        column-count: 2;
-    }
+	.card-columns {
+		-webkit-column-count: 2;
+		-moz-column-count: 2;
+		column-count: 2;
+	}
 }
