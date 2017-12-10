@@ -209,10 +209,13 @@ function calcBackground() {
 
 function setBackground(num, dark) {
 	$("body").css("background-image", "url(img/" + num + ".png)");
-	if (dark)
+	if (dark) {
 		$(".btn-light").removeClass("btn-light").addClass("btn-dark");
-	else
+		$(".navbar").removeClass("navbar-light").addClass("navbar-dark");
+	} else {
 		$(".btn-dark").removeClass("btn-dark").addClass("btn-light");
+		$(".navbar").removeClass("navbar-dark").addClass("navbar-light");
+	}
 }
 
 function getListString() {
