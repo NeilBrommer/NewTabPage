@@ -17,7 +17,8 @@ $(document).ready(function () {
 		var combo = $("#newBookmarkGroup");
 		var data = getList();
 		for (var i = 0; i < data.length; i++) {
-			combo.append($("<option>").attr({ "value": i }).text(data[i].title));
+			combo.append($("<option>").attr({ "value": i })
+				.text(data[i].title));
 		}
 
 
@@ -26,7 +27,9 @@ $(document).ready(function () {
 		$("#newBookmarkModal").modal("hide");
 	});
 
-	$("#btnEdit").click(function (e) { window.alert("Editing is currently not implemented"); });
+	$("#btnEdit").click(function (e) {
+		window.alert("Editing is currently not implemented");
+	});
 
 	$("#btnImport").click(importBookmarks);
 	$("#exportText").click(function () {
@@ -71,7 +74,8 @@ function loadBookmarks() {
 				// and groups could finish loading in a different order
 				var cardList = $("#cardList");
 				for (var i = 0; i < indexes.length; i++) {
-					var placeholder = $("<div>").attr("id", "group-" + i).appendTo(cardList);
+					var placeholder = $("<div>").attr("id", "group-" + i)
+						.appendTo(cardList);
 					buildGroup(indexes[i], placeholder);
 				}
 
@@ -103,10 +107,22 @@ function loadBookmarks() {
 			exBookmarks.createIndex("address", "address", { unique: false });
 			groupStore.add({ "title": "Examples", "groupIndex": 0 });
 
-			exBookmarks.add({ "name": "Github", "address": "https://github.com/" }, 0);
-			exBookmarks.add({ "name": "This project on Github", "address": "https://github.com/NeilBrommer/NewTabPage" }, 1);
-			exBookmarks.add({ "name": "Hacker News", "address": "https://news.ycombinator.com/" }, 2);
-			exBookmarks.add({ "name": "reddit", "address": "https://www.reddit.com/" }, 3);
+			exBookmarks.add({
+				"name": "Github",
+				"address": "https://github.com/"
+			}, 0);
+			exBookmarks.add({
+				"name": "This project on Github",
+				"address": "https://github.com/NeilBrommer/NewTabPage"
+			}, 1);
+			exBookmarks.add({
+				"name": "Hacker News",
+				"address": "https://news.ycombinator.com/"
+			}, 2);
+			exBookmarks.add({
+				"name": "reddit",
+				"address": "https://www.reddit.com/"
+			}, 3);
 		}
 	}
 }
@@ -118,7 +134,10 @@ function buildGroup(groupInfo, placeholder) {
 	groupRequest.onsuccess = function (e) {
 		var bookmarks = e.target.result;
 
-		bookmarkList[groupInfo.groupIndex] = { "title": groupInfo.title, "bookmarks": bookmarks };
+		bookmarkList[groupInfo.groupIndex] = {
+			"title": groupInfo.title,
+			"bookmarks": bookmarks
+		};
 
 		buildCard(groupInfo.title, bookmarks).appendTo(placeholder);
 	}
