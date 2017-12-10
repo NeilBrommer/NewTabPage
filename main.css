@@ -31,6 +31,12 @@ body {
 	background: transparent !important;
 }
 
+/* Move the navbar contents onto the same line as the toggler */
+#navbarCollapse {
+	margin-top: -3rem !important;
+	margin-right: 50px;
+}
+
 /* set the width of the main container based on element width */
 @media (max-width: 34em) {
 	#wrapper {
