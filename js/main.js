@@ -28,6 +28,7 @@ $(document).ready(function () {
 	});
 
 	$("#btnEdit").click(function (e) {
+		// TODO: editing bookmarks
 		window.alert("Editing is currently not implemented");
 	});
 
@@ -74,9 +75,11 @@ function loadBookmarks() {
 				// and groups could finish loading in a different order
 				var cardList = $("#cardList");
 				for (var i = 0; i < indexes.length; i++) {
-					var placeholder = $("<div>").attr("id", "group-" + i)
-						.appendTo(cardList);
-					buildGroup(indexes[i], placeholder);
+					$("<div>").attr("id", "group-" + i).appendTo(cardList);
+				}
+
+				for (let item of indexes) {
+					buildGroup(item, $("#group-" + item.groupIndex));
 				}
 
 				db.close();
