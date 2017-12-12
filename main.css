@@ -31,6 +31,13 @@ body {
 	background: transparent !important;
 }
 
+pre {
+	tab-size: 4;
+	-moz-tab-size: 4;
+	background-color: rgb(245, 245, 245);
+	padding: 10px;
+}
+
 /* Move the navbar contents onto the same line as the toggler */
 #navbarCollapse {
 	margin-top: -3rem !important;
