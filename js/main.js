@@ -1,5 +1,6 @@
 // use this when making changes so that there is no need to parse the page
 var bookmarkList;
+var dbVersion;
 
 $(document).ready(function () {
 	calcBackground();
@@ -15,17 +16,19 @@ $(document).ready(function () {
 
 	$("#newBookmarkModal").on("shown.bs.modal", function () {
 		var combo = $("#newBookmarkGroup");
-		var data = getList();
-		for (var i = 0; i < data.length; i++) {
-			combo.append($("<option>").attr({ "value": i })
-				.text(data[i].title));
+		combo.empty();
+		combo.append($("<option>").attr({ "value": "--" })
+			.text("New Group"));
+
+		for (let group of bookmarkList) {
+			combo.append($("<option>").attr({ "value": group.title })
+				.text(group.title));
 		}
 
-
-		// TODO: complete adding bookmarks
-		window.alert("Adding bookmarks is still incomplete");
-		$("#newBookmarkModal").modal("hide");
+		$("#createGroup").prop("required", true);
 	});
+
+	$("#addBookmarkForm").submit(addNewBookmark);
 
 	$("#btnEdit").click(function (e) {
 		// TODO: editing bookmarks
@@ -37,6 +40,83 @@ $(document).ready(function () {
 		$("#exportText").select();
 	});
 });
+
+function addNewBookmark(e) {
+	e.preventDefault();
+
+	// read in data from the form
+	var bkmkName = $("#newBookmarkName").val();
+	var bkmkAddress = $("#newBookmarkURL").val();
+	var bkmkGroup = $("#newBookmarkGroup").val();
+
+	if (bkmkGroup == "--") { // create a new group
+		var newGroupName = $("#newBookMarkGroupNew").val();
+
+		var newGroup = {
+			"title": newGroupName,
+			"bookmarks": [ { "name": bkmkName, "address": bkmkAddress } ]
+		};
+
+		var openDBRequest = window.indexedDB.open("bookmarks", dbVersion + 1);
+		openDBRequest.onupgradeneeded = function (e) {
+			var db = e.target.result;
+
+			if (db.objectStoreNames.contains(newGroup.title)) {
+				window.alert("The group already exists");
+				return;
+			}
+
+			var objStore = db.createObjectStore(newGroup.title, { autoIncrement: true });
+			objStore.createIndex("name", "name", { unique: false });
+			objStore.createIndex("address", "address", { unique: false });
+
+
+			var bookmarks = newGroup.bookmarks;
+			for (var i = 0; i < bookmarks.length; i++) {
+				var bkmk = bookmarks[i];
+				objStore.add({ "name": bkmk.name, "address": bkmk.address }, i);
+			}
+		}
+		openDBRequest.onsuccess = function (e) {
+			var db = e.target.result;
+
+			db.transaction(["groupIndexes"], "readwrite")
+				.objectStore("groupIndexes")
+				.add({ "title": newGroup.title, "groupIndex": bookmarkList.length });
+
+			bookmarkList.push(newGroup);
+
+			db.close();
+			loadBookmarks();
+			$(".modal").modal("hide");
+		}
+
+		openDBRequest.onerror = function (e) { console.log(e); }
+	} else { // add to existing group
+		var openDBRequest = window.indexedDB.open("bookmarks");
+		openDBRequest.onsuccess = function (e) {
+			var db = e.target.result;
+			var newItem = { "name": bkmkName, "address": bkmkAddress };
+
+			db.transaction([bkmkGroup], "readwrite")
+				.objectStore(bkmkGroup)
+				.add(newItem);
+
+			for (let group of bookmarkList) {
+				if (group.title == bkmkGroup) {
+					group.bookmarks.push(newItem);
+					break;
+				}
+			}
+
+			db.close();
+			loadBookmarks();
+			$(".modal").modal("hide");
+		}
+
+		openDBRequest.onerror = function (e) { console.log(e); }
+	}
+}
 
 function importBookmarks() {
 	try {
@@ -61,8 +141,8 @@ function loadBookmarks() {
 	var openDBRequest = window.indexedDB.open("bookmarks");
 
 	openDBRequest.onsuccess = function (dbEvt) {
-		console.log("Opened database");
 		db = dbEvt.target.result;
+		dbVersion = db.version;
 		bookmarkList = [];
 
 		db.transaction(["groupIndexes"], "readonly")
@@ -105,7 +185,7 @@ function loadBookmarks() {
 			var groupStore = initDB(db);
 
 			// add example bookmarks
-			var exBookmarks = db.createObjectStore("Examples");
+			var exBookmarks = db.createObjectStore("Examples", { autoIncrement: true });
 			exBookmarks.createIndex("name", "name", { unique: false });
 			exBookmarks.createIndex("address", "address", { unique: false });
 			groupStore.add({ "title": "Examples", "groupIndex": 0 });
@@ -113,19 +193,19 @@ function loadBookmarks() {
 			exBookmarks.add({
 				"name": "Github",
 				"address": "https://github.com/"
-			}, 0);
+			});
 			exBookmarks.add({
 				"name": "This project on Github",
 				"address": "https://github.com/NeilBrommer/NewTabPage"
-			}, 1);
+			});
 			exBookmarks.add({
 				"name": "Hacker News",
 				"address": "https://news.ycombinator.com/"
-			}, 2);
+			});
 			exBookmarks.add({
 				"name": "reddit",
 				"address": "https://www.reddit.com/"
-			}, 3);
+			});
 		}
 	}
 }
@@ -148,7 +228,10 @@ function buildGroup(groupInfo, placeholder) {
 
 function buildCard(title, itemList) {
 	var card = $(document.createElement("div"));
-	card.attr({ "id": "group-" + title, "class": "card bookmarkGroup" });
+	card.attr({
+		"id": "group-" + title,
+		"class": "card bookmarkGroup"
+	});
 
 	var cardHead = $(document.createElement("div"));
 	cardHead.attr({ "class": "card-header" });
@@ -175,10 +258,14 @@ function buildCard(title, itemList) {
 }
 
 function selectGroupChanged(value) {
-	if (value == "-")
-		$("#createGroup").show();
-	else
-		$("#createGroup").hide();
+	var groupText = $("#createGroup");
+	if (value == "--") {
+		groupText.show();
+		groupText.prop("required", true);
+	} else {
+		groupText.hide();
+		groupText.prop("required", false);
+	}
 }
 
 function calcBackground() {
@@ -238,6 +325,7 @@ function setList(data) {
 	var openDBRequest = window.indexedDB.open("bookmarks", 1);
 
 	openDBRequest.onsuccess = function (e) {
+		dbVersion = db.version;
 		db.close();
 		loadBookmarks();
 	}
@@ -252,7 +340,7 @@ function setList(data) {
 
 		// create the object stores
 		for (var i = 0; i < data.length; i++) {
-			addGroup(data[i], groupStore, i);
+			addGroup(data[i], groupStore, db, i);
 		}
 	}
 }
@@ -265,8 +353,8 @@ function initDB(db) {
 	return groupStore;
 }
 
-function addGroup(group, groupStore, index) {
-	var objStore = db.createObjectStore(group.title);
+function addGroup(group, groupStore, db, index) {
+	var objStore = db.createObjectStore(group.title, { autoIncrement: true });
 	objStore.createIndex("name", "name", { unique: false });
 	objStore.createIndex("address", "address", { unique: false });
 	groupStore.add({ "title": group.title, "groupIndex": index });

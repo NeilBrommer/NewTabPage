@@ -28,7 +28,7 @@
 				<button class="btn btn-light mr-2 my-1 my-sm-0" type="button" data-Toggle="modal" data-target="#aboutModal">About</button>
 				<button class="btn btn-light mr-2 my-1 my-sm-0" type="button" data-Toggle="modal" data-target="#importExportModal">Import/Export</button>
 				<button id="btnEdit" class="btn btn-light mr-2 my-1 my-sm-0" type="button"><span class="fa fa-exclamation-circle"></span> Edit</button>
-				<button class="btn btn-light mr-2 my-1 my-sm-0" type="button" data-toggle="modal" data-target="#newBookmarkModal"><span class="fa fa-exclamation-circle"></span> Add</button>
+				<button class="btn btn-light mr-2 my-1 my-sm-0" type="button" data-toggle="modal" data-target="#newBookmarkModal">Add</button>
 			</form>
 		</div>
 	</nav>
@@ -48,30 +48,32 @@
 						<span aria-hidden="true">&times;</span>
 					</button>
 				</div>
-				<div class="modal-body">
-					<div class="form-group">
-						<label for="newBookmarkName">Name</label>
-						<input id="newBookmarkName" type="text" class="form-control">
+				<form id="addBookmarkForm">
+					<div class="modal-body">
+						<div class="form-group">
+							<label for="newBookmarkName">Name</label>
+							<input id="newBookmarkName" type="text" class="form-control" required>
+						</div>
+						<div class="form-group">
+							<label for="newBookmarkURL">Address</label>
+							<input id="newBookmarkURL" type="url" class="form-control" required>
+						</div>
+						<div class="form-group">
+							<label for="newBookmarkGroup">Group</label>
+							<select id="newBookmarkGroup" name="Group" class="form-control" onchange="selectGroupChanged(this.value)">
+								<option value="-">New Group</option>
+							</select>
+						</div>
+						<div id="createGroup" class="form-group newGroup">
+							<label for="newBookMarkGroupNew">New Group</label>
+							<input id="newBookMarkGroupNew" type="text" class="form-control">
+						</div>
 					</div>
-					<div class="form-group">
-						<label for="newBookmarkURL">Address</label>
-						<input id="newBookmarkURL" type="url" class="form-control">
+					<div class="modal-footer">
+						<button type="submit" class="btn btn-primary">Add</button>
+						<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
 					</div>
-					<div class="form-group">
-						<label for="newBookmarkGroup">Group</label>
-						<select id="newBookmarkGroup" name="Group" class="form-control" onchange="selectGroupChanged(this.value)">
-							<option value="-">New Group</option>
-						</select>
-					</div>
-					<div id="createGroup" class="form-group newGroup">
-						<label for="newBookMarkGroupNew">New Group</label>
-						<input id="newBookMarkGroupNew" type="text" class="form-control">
-					</div>
-				</div>
-				<div class="modal-footer">
-					<button type="button" class="btn btn-primary">Add</button>
-					<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-				</div>
+				</form>
 			</div>
 		</div>
 	</div>
