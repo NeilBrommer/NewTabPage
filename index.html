@@ -4,9 +4,9 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-	<meta name="description" content="A new tab page">
+	<meta name="description" content="Start - A new tab page">
 	<meta name="author" content="Neil Brommer">
-	<link rel="icon" href="favicon.png">
+	<link rel="icon" href="/favicon.png">
 
 	<title>Start</title>
 
@@ -125,7 +125,7 @@
 					</p>
 					<p>
 						This page keeps a list of bookmarks separated into groups. It's intended to be used a a new tab page.
-						It uses localStorage to store the list of bookmarks rather than storing them server side.
+						It uses IndexedDB to store the list of bookmarks in the browser rather than storing them server side.
 					</p>
 					<p>
 						This site uses Danny Care's <a href="https://danny.care/portfolio/bitday/" target="_blank">Bitday</a>
@@ -137,12 +137,11 @@
 						<a href="http://fontawesome.io/">Font Awesome</a>.
 					</p>
 					<p>
-						Adding/editing bookmarks and groups is currently not implemented. To add or edit them, you need to use
-						the import/export feature and manually build a JSON object yourself. The format for the import/export
-						JSON is:
+						Editing bookmarks is currently not supported. To move, change, or delete bookmarks,
+						you need to use the import/export function and manually edit the JSON data. The format
+						for this is:
 					</p>
-					<pre>
-[
+					<pre class="rounded border"><code>[
 	{
 		"title": "Group title",
 		"bookmarks": [
@@ -165,8 +164,10 @@
 			}
 		]
 	}
-]
-					</pre>
+]</code></pre>
+					<p>
+						To remove all bookmarks, just import <code>[]</code> (an empty list).
+					</p>
 				</div>
 				<div class="modal-footer">
 					<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>

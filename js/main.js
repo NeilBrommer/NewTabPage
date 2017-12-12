@@ -206,6 +206,8 @@ function loadBookmarks() {
 				"name": "reddit",
 				"address": "https://www.reddit.com/"
 			});
+
+			$("#aboutModal").modal("show");
 		}
 	}
 }
