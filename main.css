@@ -40,7 +40,7 @@ pre {
 
 /* Move the navbar contents onto the same line as the toggler */
 #navbarCollapse {
-	margin-top: -3rem !important;
+	margin-top: -2.5rem !important;
 	margin-right: 50px;
 }
 
