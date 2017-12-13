@@ -4,6 +4,7 @@ var dbVersion;
 
 $(document).ready(function () {
 	calcBackground();
+	setInterval(calcBackground, 60000);
 });
 
 function calcBackground() {
