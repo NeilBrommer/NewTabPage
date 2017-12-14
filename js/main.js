@@ -35,12 +35,14 @@ function calcBackground() {
 
 function setBackground(num, dark) {
 	$("body").css("background-image", "url(img/" + num + ".png)");
+	// dark is a boolean that indicates the brightness of the background
+
 	if (dark) {
-		$(".btn-light").removeClass("btn-light").addClass("btn-dark");
-		$(".navbar").removeClass("navbar-light").addClass("navbar-dark");
-	} else {
-		$(".btn-dark").removeClass("btn-dark").addClass("btn-light");
 		$(".navbar").removeClass("navbar-dark").addClass("navbar-light");
+		$(".navbar-toggler").removeClass("toggler-bg-dark btn-dark").addClass("toggler-bg-light btn-light");
+	} else {
+		$(".navbar").removeClass("navbar-light").addClass("navbar-dark");
+		$(".navbar-toggler").removeClass("toggler-bg-light btn-light").addClass("toggler-bg-dark btn-dark");
 	}
 }
 

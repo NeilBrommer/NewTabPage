@@ -50,6 +50,14 @@ pre {
 	margin-right: 50px;
 }
 
+.toggler-bg-dark {
+	background: rgba(0, 0, 0, 0.24);
+}
+
+.toggler-bg-light {
+	background: rgba(255, 255, 255, 0.24);
+}
+
 /* set the width of the main container based on element width */
 @media (max-width: 34em) {
 	#wrapper {
