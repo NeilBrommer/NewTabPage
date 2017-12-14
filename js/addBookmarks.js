@@ -6,8 +6,9 @@ $(document).ready(function () {
 			.text("New Group"));
 
 		for (let group of bookmarkList) {
-			combo.append($("<option>").attr({ "value": group.title })
-				.text(group.title));
+			if (group != null)
+				combo.append($("<option>").attr({ "value": group.title })
+					.text(group.title));
 		}
 
 		$("#createGroup").prop("required", true);
@@ -37,6 +38,7 @@ function addNewBookmark(e) {
 		var openDBRequest = window.indexedDB.open("bookmarks", dbVersion + 1);
 		openDBRequest.onupgradeneeded = function (e) {
 			var db = e.target.result;
+			dbVersion++;
 
 			if (db.objectStoreNames.contains(newGroup.title)) {
 				window.alert("The group already exists");
@@ -57,15 +59,24 @@ function addNewBookmark(e) {
 		openDBRequest.onsuccess = function (e) {
 			var db = e.target.result;
 
-			db.transaction(["groupIndexes"], "readwrite")
-				.objectStore("groupIndexes")
-				.add({ "title": newGroup.title, "groupIndex": bookmarkList.length });
+			var indexStore = db.transaction(["groupIndexes"], "readwrite")
+				.objectStore("groupIndexes");
 
-			bookmarkList.push(newGroup);
+			indexStore.getAll().onsuccess = function (evt) {
+				var items = evt.target.result;
+				var largest = 0;
+				for (let item of items) {
+					if (item.groupIndex >= largest)
+						largest = item.groupIndex + 1;
+				}
 
-			db.close();
-			loadBookmarks();
-			$(".modal").modal("hide");
+				indexStore.add({ "title": newGroup.title, "groupIndex": largest });
+				bookmarkList[largest] = newGroup;
+
+				db.close();
+				loadBookmarks();
+				$(".modal").modal("hide");
+			}
 		}
 
 		openDBRequest.onerror = function (e) { console.log(e); }

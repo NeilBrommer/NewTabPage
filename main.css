@@ -24,6 +24,11 @@ body {
 	padding-bottom: 0.4em;
 }
 
+.start-hidden {
+	display: none;
+	height: 16px; /* prvents problems with height jumping with jquery show/hide */
+}
+
 .list-group-item {
 	padding-top: .4rem;
 	padding-bottom: .4rem;
@@ -32,6 +37,10 @@ body {
 .card, .btn {
 	border: 0px;
 	box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+}
+
+.list-group {
+	min-height: 31px;
 }
 
 .navbar {
@@ -57,6 +66,10 @@ pre {
 
 .toggler-bg-light {
 	background: rgba(255, 255, 255, 0.24);
+}
+
+.clickable {
+	cursor: pointer;
 }
 
 /* set the width of the main container based on element width */

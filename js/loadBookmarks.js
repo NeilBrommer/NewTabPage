@@ -16,12 +16,15 @@ function loadBookmarks() {
 			.getAll()
 			.onsuccess = function (indexEvt) {
 				var indexes = indexEvt.target.result;
+				indexes.sort(function (a, b) {
+					return a.groupIndex - b.groupIndex;
+				});
 
 				// use a placholder because getting the group info is async
 				// and groups could finish loading in a different order
 				var cardList = $("#cardList");
 				for (var i = 0; i < indexes.length; i++) {
-					$("<div>").attr("id", "group-" + i).appendTo(cardList);
+					$("<div>").attr("id", "group-" + indexes[i].groupIndex).appendTo(cardList);
 				}
 
 				for (let item of indexes) {
@@ -84,6 +87,12 @@ function buildGroup(groupInfo, placeholder) {
 	var groupRequest = groupStore.getAll();
 	groupRequest.onsuccess = function (e) {
 		var bookmarks = e.target.result;
+		var keyRequest = groupStore.getAllKeys();
+		keyRequest.onsuccess = function (evt) {
+			var keys = evt.target.result;
+			for (var i = 0; i < bookmarks.length; i++) {
+				bookmarks[i].key = keys[i];
+			}
 
 		bookmarkList[groupInfo.groupIndex] = {
 			"title": groupInfo.title,
@@ -93,33 +102,45 @@ function buildGroup(groupInfo, placeholder) {
 		buildCard(groupInfo.title, bookmarks).appendTo(placeholder);
 	}
 }
+}
 
 function buildCard(title, itemList) {
-	var card = $(document.createElement("div"));
+	var card = $("<div>");
 	card.attr({
-		"id": "group-" + title,
-		"class": "card bookmarkGroup"
+		"id": "group-" + title.replace(" ", "-"),
+		"class": "card"
 	});
 
-	var cardHead = $(document.createElement("div"));
-	cardHead.attr({ "class": "card-header" });
+	var cardHead = $("<div>");
+	cardHead.addClass("card-header");
 	cardHead.text(title);
+	var btnDel = $("<span>")
+		.attr("data-group", title)
+		.addClass("btnDelGroup far fa-trash-alt float-right mt-1 start-hidden text-danger clickable");
+	btnDel.appendTo(cardHead);
 	card.append(cardHead);
 
-	var cardList = $(document.createElement("div"));
-	cardList.attr({ "class": "list-group list-group-flush" });
+	var cardList = $("<div>");
+	cardList.addClass("list-group list-group-flush bookmarkGroup").attr("data-group", title);
 	card.append(cardList);
 
 	for (var i = 0; i < itemList.length; i++) {
 		var item = itemList[i];
-		var link = $(document.createElement("a"));
-		link.attr({
-			"class": "list-group-item list-group-item-action",
-			"href": item.address
-		});
-		link.text(item.name);
 
-		cardList.append(link);
+		var del = $("<span>")
+			.attr({"data-group": title, "data-key": item.key})
+			.addClass("btnDel far fa-trash-alt float-right mt-1 start-hidden text-danger");
+		del.css("cursor: pointer;");
+
+		$("<a>")
+			.attr({
+				"id": title + "-" + item.key,
+				"class": "list-group-item list-group-item-action bookmark",
+				"href": item.address,
+			})
+			.text(item.name)
+			.append(del)
+			.appendTo(cardList);
 	}
 
 	return card;

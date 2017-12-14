@@ -7,7 +7,7 @@ $(document).ready(function () {
 			$("#exportText").text("[]");
 	});
 
-	$("#btnImport").click(importBookmarks);
+	$("#btnImportDialog").click(importBookmarks);
 
 	$("#exportText").click(function () {
 		$("#exportText").select();
