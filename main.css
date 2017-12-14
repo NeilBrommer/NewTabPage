@@ -19,13 +19,14 @@ body {
 	color: white;
 	font-size: 16px;
 	font-weight: 600;
-	height: 32px;
-	padding-top: 4px;
+	vertical-align: middle;
+	padding-top: 0.4em;
+	padding-bottom: 0.4em;
 }
 
 .list-group-item {
-	height: 32px;
-	padding-top: 4px;
+	padding-top: .4rem;
+	padding-bottom: .4rem;
 }
 
 .card, .btn {
