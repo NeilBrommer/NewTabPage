@@ -6,33 +6,35 @@ var backgroundList = ["img/1.png", "img/2.png", "img/3.png", "img/4.png",
 
 $(document).ready(function () {
 	calcBackground();
-	setInterval(calcBackground, 60000);
+	setInterval(calcBackground, 60000); // run every minute
 });
 
 function calcBackground() {
-	var now = new Date();
-	var hours = now.getHours();
-	var mins = now.getMinutes();
-	var total = (hours * 60) + mins;
+	if (navigator.onLine) {
+		var now = new Date();
+		var hours = now.getHours();
+		var mins = now.getMinutes();
+		var total = (hours * 60) + mins;
 
-	// 24*60 = 1440
-	// 2:40 between each step
-	if (total > 300 && total < 460) // 5:00 - 7:40
-		setBackground(0, false);
-	else if (total > 460 && total < 620)
-		setBackground(1, false);
-	else if (total > 620 && total < 780)
-		setBackground(2, false);
-	else if (total > 780 && total < 940)
-		setBackground(3, false);
-	else if (total > 940 && total < 1100)
-		setBackground(4, false);
-	else if (total > 1100 && total < 1260)
-		setBackground(5, true);
-	else if (total > 1260 && total < 1420)
-		setBackground(6, true);
-	else
-		setBackground(7, true);
+		// 24*60 = 1440
+		// 2:40 between each step
+		if (total > 300 && total < 460) // 5:00 - 7:40
+			setBackground(0, false);
+		else if (total > 460 && total < 620)
+			setBackground(1, false);
+		else if (total > 620 && total < 780)
+			setBackground(2, false);
+		else if (total > 780 && total < 940)
+			setBackground(3, false);
+		else if (total > 940 && total < 1100)
+			setBackground(4, false);
+		else if (total > 1100 && total < 1260)
+			setBackground(5, true);
+		else if (total > 1260 && total < 1420)
+			setBackground(6, true);
+		else
+			setBackground(7, true);
+	}
 }
 
 function setBackground(num, dark) {
