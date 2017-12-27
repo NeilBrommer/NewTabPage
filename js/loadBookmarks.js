@@ -9,31 +9,30 @@ function loadBookmarks() {
 	openDBRequest.onsuccess = function (dbEvt) {
 		db = dbEvt.target.result;
 		dbVersion = db.version;
-		bookmarkList = [];
 
-		db.transaction(["groupIndexes"], "readonly")
-			.objectStore("groupIndexes")
-			.getAll()
-			.onsuccess = function (indexEvt) {
-				var indexes = indexEvt.target.result;
-				indexes.sort(function (a, b) {
-					return a.groupIndex - b.groupIndex;
-				});
+		db.transaction(["Groups"], "readonly").objectStore("Groups").getAll().onsuccess = function (groupsEvt) {
+			var groups = groupsEvt.target.result;
+			groups.sort(function (a, b) {
+				return a.groupIndex - b.groupIndex;
+			});
 
-				// use a placholder because getting the group info is async
-				// and groups could finish loading in a different order
-				var cardList = $("#cardList");
-				for (var i = 0; i < indexes.length; i++) {
-					$("<div>").attr("id", "group-" + indexes[i].groupIndex).appendTo(cardList);
-				}
-
-				for (let item of indexes) {
-					buildGroup(item, $("#group-" + item.groupIndex));
-				}
-
-				db.close();
+			// use a placholder
+			var cardList = $("#cardList");
+			for (let groupData of groups) {
+				$("<div>").attr("id", "group-" + groupData.groupIndex)
+					.addClass("bookmarkGroupContainer")
+					.appendTo(cardList);
 			}
-		;
+
+			bookmarkList = [];
+
+			for (let groupData of groups) {
+				buildGroup(groupData, $("#group-" + groupData.groupIndex));
+				bookmarkList.push(groupData);
+			}
+
+			db.close();
+		};
 	}
 
 	openDBRequest.onerror = function (e) { console.log(e); }
@@ -43,81 +42,55 @@ function loadBookmarks() {
 		console.log("Creating database");
 		db = e.target.result;
 
-		var data = window.localStorage.getItem("bookmarks");
-		if (data != null) {
-			console.log("Importing data from old version");
-			data = JSON.parse(data);
-			db.close();
-			setList(data);
-			window.localStorage.removeItem("bookmarks");
-		} else {
-			var groupStore = initDB(db);
+		var groupStore = db.createObjectStore("Groups", {keyPath: "groupIndex"});
+		groupStore.createIndex("groupIndex", "groupIndex", {unique: true});
+		groupStore.createIndex("title", "title", {unique: false});
+		groupStore.createIndex("bookmarks", "bookmarks", {unique: false});
 
-			// add example bookmarks
-			var exBookmarks = db.createObjectStore("Examples", { autoIncrement: true });
-			exBookmarks.createIndex("name", "name", { unique: false });
-			exBookmarks.createIndex("address", "address", { unique: false });
-			groupStore.add({ "title": "Examples", "groupIndex": 0 });
+		var groupData = {
+			groupIndex: 0,
+			title: "Examples",
+			bookmarks: [
+				{
+					"name": "Github",
+					"address": "https://github.com/"
+				},
+				{
+					"name": "This project on Github",
+					"address": "https://github.com/NeilBrommer/NewTabPage"
+				}
+			]
+		};
 
-			exBookmarks.add({
-				"name": "Github",
-				"address": "https://github.com/"
-			});
-			exBookmarks.add({
-				"name": "This project on Github",
-				"address": "https://github.com/NeilBrommer/NewTabPage"
-			});
-			exBookmarks.add({
-				"name": "Hacker News",
-				"address": "https://news.ycombinator.com/"
-			});
-			exBookmarks.add({
-				"name": "reddit",
-				"address": "https://www.reddit.com/"
-			});
+		groupStore.add(groupData);
 
-			$("#aboutModal").modal("show");
-		}
+		$("#aboutModal").modal("show");
 	}
 }
 
 function buildGroup(groupInfo, placeholder) {
-	var groupTransaction = db.transaction([groupInfo.title], "readonly");
-	var groupStore = groupTransaction.objectStore(groupInfo.title);
-	var groupRequest = groupStore.getAll();
-	groupRequest.onsuccess = function (e) {
-		var bookmarks = e.target.result;
-		var keyRequest = groupStore.getAllKeys();
-		keyRequest.onsuccess = function (evt) {
-			var keys = evt.target.result;
-			for (var i = 0; i < bookmarks.length; i++) {
-				bookmarks[i].key = keys[i];
-			}
-
-		bookmarkList[groupInfo.groupIndex] = {
-			"title": groupInfo.title,
-			"bookmarks": bookmarks
-		};
-
-		buildCard(groupInfo.title, bookmarks).appendTo(placeholder);
-	}
-}
+	buildCard(groupInfo.title, groupInfo.groupIndex, groupInfo.bookmarks).appendTo(placeholder);
 }
 
-function buildCard(title, itemList) {
+function buildCard(title, groupIndex, itemList) {
 	var card = $("<div>");
 	card.attr({
-		"id": "group-" + title.replace(" ", "-"),
-		"class": "card"
+		"id": "group-" + groupIndex,
+		"class": "card",
+		"data-group-name": title,
+		"data-group-index": groupIndex
 	});
 
 	var cardHead = $("<div>");
 	cardHead.addClass("card-header");
 	cardHead.text(title);
+	var btnDrag = $("<span>").addClass("mr-2 start-hidden dragGroupHandle")
+		.append($("<span>").addClass("fas fa-bars"));
 	var btnDel = $("<span>")
-		.attr("data-group", title)
+		.attr("data-group", groupIndex)
 		.addClass("btnDelGroup far fa-trash-alt float-right mt-1 start-hidden text-danger clickable");
 	btnDel.appendTo(cardHead);
+	btnDrag.prependTo(cardHead);
 	card.append(cardHead);
 
 	var cardList = $("<div>");
@@ -126,35 +99,29 @@ function buildCard(title, itemList) {
 
 	for (var i = 0; i < itemList.length; i++) {
 		var item = itemList[i];
+		// the fa span gets replaced with an svg element, which causes problems
+		// with using it as a drag handle, so wrap it in the drag element
+		var handle = $("<span>").addClass("mr-2 start-hidden dragHandle")
+			.append($("<span>").addClass("fas fa-bars"));
 
 		var del = $("<span>")
-			.attr({"data-group": title, "data-key": item.key})
+			.attr({"data-group": title, "data-group-index": groupIndex, "data-key": i})
 			.addClass("btnDel far fa-trash-alt float-right mt-1 start-hidden text-danger");
 		del.css("cursor: pointer;");
 
 		$("<a>")
 			.attr({
-				"id": title + "-" + item.key,
+				"id": title + "-" + i,
 				"class": "list-group-item list-group-item-action bookmark",
 				"href": item.address,
+				"data-name": item.name,
+				"data-address": item.address
 			})
 			.text(item.name)
+			.prepend(handle)
 			.append(del)
 			.appendTo(cardList);
 	}
 
 	return card;
-}
-
-function addGroup(group, groupStore, db, index) {
-	var objStore = db.createObjectStore(group.title, { autoIncrement: true });
-	objStore.createIndex("name", "name", { unique: false });
-	objStore.createIndex("address", "address", { unique: false });
-	groupStore.add({ "title": group.title, "groupIndex": index });
-
-	var bookmarks = group.bookmarks;
-	for (var i = 0; i < bookmarks.length; i++) {
-		var bkmk = bookmarks[i];
-		objStore.add({ "name": bkmk.name, "address": bkmk.address }, i);
-	}
 }

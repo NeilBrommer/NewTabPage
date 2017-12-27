@@ -1,11 +1,5 @@
 $(document).ready(function () {
-	$("#importExportModal").on("shown.bs.modal", function () {
-		var data = JSON.stringify(bookmarkList, null, 4);
-		if (data != null)
-			$("#exportText").text(data);
-		else
-			$("#exportText").text("[]");
-	});
+	$("#importExportModal").on("shown.bs.modal", showBookmarkData);
 
 	$("#btnImportDialog").click(importBookmarks);
 
@@ -13,6 +7,22 @@ $(document).ready(function () {
 		$("#exportText").select();
 	});
 });
+
+function showBookmarkData() {
+	var openDBRequest = window.indexedDB.open("bookmarks");
+
+	openDBRequest.onsuccess = function (e) {
+		var db = e.target.result;
+
+		db.transaction("Groups").objectStore("Groups").getAllKeys().onsuccess = function (evt) {
+			var data = JSON.stringify(bookmarkList, null, 4);
+			if (data != null)
+				$("#exportText").text(data);
+			else
+				$("#exportText").text("[]");
+		}
+	}
+}
 
 function importBookmarks() {
 	try {
@@ -23,10 +33,9 @@ function importBookmarks() {
 		return;
 	}
 
-	if (verifyBookmarks(newData)) {
+	if (validateBookmarks(newData)) {
+		$("#btnImportDialog").prop("disabled", true);
 		setList(newData);
-
-		$("#importExportModal").modal("hide");
 	} else {
 		window.alert("Invalid Format");
 	}
@@ -36,38 +45,32 @@ function setList(data) {
 	// empty the DB and fill it with the new data
 	bookmarkList = data;
 
-	try {
-		indexedDB.deleteDatabase("bookmarks");
-	} catch (err) {
-		// it's OK if the DB doesn't exist
-		if (err.name != "NotFoundError") {
-			console.error(err);
-			return;
-		}
-	}
-	var openDBRequest = window.indexedDB.open("bookmarks", 1);
+	var openDBRequest = window.indexedDB.open("bookmarks");
 
 	openDBRequest.onsuccess = function (e) {
-		dbVersion = db.version;
+		db = e.target.result;
+
+		var groupStore = db.transaction("Groups", "readwrite").objectStore("Groups");
+		groupStore.clear();
+
+		// create the object stores
+		for (group of data) {
+			groupStore.add(group);
+		}
+
+		$("#importExportModal").modal("hide");
+		$("#btnImportDialog").prop("disabled", false);
+
 		db.close();
 		loadBookmarks();
 	}
 
 	openDBRequest.onerror = function (err) { console.error(err); }
-
-	openDBRequest.onupgradeneeded = function (e) {
-		db = e.target.result;
-
-		var groupStore = initDB(db);
-
-		// create the object stores
-		for (var i = 0; i < data.length; i++) {
-			addGroup(data[i], groupStore, db, i);
-		}
-	}
 }
 
-function verifyBookmarks(bookmarks) {
+function validateBookmarks(bookmarks) {
+	var indexes = [];
+
 	if (!Array.isArray(bookmarks))
 		return false;
 
@@ -79,6 +82,14 @@ function verifyBookmarks(bookmarks) {
 
 		if (item.title == null || typeof item.title != "string")
 			return false;
+
+		if (item.groupIndex == null || typeof item.groupIndex != "number")
+			return false;
+
+		if (arrayContains(indexes, item.groupIndex))
+			return false;
+
+		indexes.push(item.groupIndex);
 
 		for (var j = 0; j < item.bookmarks.length; j++) {
 			var bkmk = item.bookmarks[j];
@@ -95,4 +106,13 @@ function verifyBookmarks(bookmarks) {
 	}
 
 	return true;
+}
+
+function arrayContains(array, searchFor) {
+	for (item of array) {
+		if (item == searchFor)
+			return true;
+	}
+
+	return false;
 }

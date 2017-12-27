@@ -7,7 +7,7 @@ $(document).ready(function () {
 
 		for (let group of bookmarkList) {
 			if (group != null)
-				combo.append($("<option>").attr({ "value": group.title })
+				combo.append($("<option>").attr({ "value": group.groupIndex })
 					.text(group.title));
 		}
 
@@ -30,48 +30,30 @@ function addNewBookmark(e) {
 	if (bkmkGroup == "--") { // create a new group
 		var newGroupName = $("#newBookMarkGroupNew").val();
 
-		var newGroup = {
-			"title": newGroupName,
-			"bookmarks": [ { "name": bkmkName, "address": bkmkAddress } ]
-		};
-
-		var openDBRequest = window.indexedDB.open("bookmarks", dbVersion + 1);
-		openDBRequest.onupgradeneeded = function (e) {
-			var db = e.target.result;
-			dbVersion++;
-
-			if (db.objectStoreNames.contains(newGroup.title)) {
-				window.alert("The group already exists");
-				return;
-			}
-
-			var objStore = db.createObjectStore(newGroup.title, { autoIncrement: true });
-			objStore.createIndex("name", "name", { unique: false });
-			objStore.createIndex("address", "address", { unique: false });
-
-
-			var bookmarks = newGroup.bookmarks;
-			for (var i = 0; i < bookmarks.length; i++) {
-				var bkmk = bookmarks[i];
-				objStore.add({ "name": bkmk.name, "address": bkmk.address }, i);
-			}
-		}
+		var openDBRequest = window.indexedDB.open("bookmarks");
 		openDBRequest.onsuccess = function (e) {
 			var db = e.target.result;
+			var groupsStore = db.transaction("Groups", "readwrite").objectStore("Groups");
 
-			var indexStore = db.transaction(["groupIndexes"], "readwrite")
-				.objectStore("groupIndexes");
+			groupsStore.getAll().onsuccess = function (evt) {
+				// find the largest index and use that +1
+				var groups = evt.target.result;
 
-			indexStore.getAll().onsuccess = function (evt) {
-				var items = evt.target.result;
-				var largest = 0;
-				for (let item of items) {
-					if (item.groupIndex >= largest)
-						largest = item.groupIndex + 1;
+				var largest = -1;
+				for (var group of groups) {
+					if (group.groupIndex > largest)
+						largest = group.groupIndex;
 				}
 
-				indexStore.add({ "title": newGroup.title, "groupIndex": largest });
-				bookmarkList[largest] = newGroup;
+				var newGroup = {
+					groupIndex: largest + 1,
+					title: newGroupName,
+					bookmarks: [ { name: bkmkName, address: bkmkAddress } ]
+				};
+
+				groupsStore.add(newGroup);
+				// don't need to add to bookmarkList because loadBookmarks is
+				// being called
 
 				db.close();
 				loadBookmarks();
@@ -84,22 +66,21 @@ function addNewBookmark(e) {
 		var openDBRequest = window.indexedDB.open("bookmarks");
 		openDBRequest.onsuccess = function (e) {
 			var db = e.target.result;
-			var newItem = { "name": bkmkName, "address": bkmkAddress };
 
-			db.transaction([bkmkGroup], "readwrite")
-				.objectStore(bkmkGroup)
-				.add(newItem);
+			var groupsStore = db.transaction("Groups", "readwrite").objectStore("Groups");
 
-			for (let group of bookmarkList) {
-				if (group.title == bkmkGroup) {
-					group.bookmarks.push(newItem);
-					break;
-				}
+			var groupReq = groupsStore.get(parseInt(bkmkGroup));
+			groupReq.onsuccess = function (evt) {
+				var group = groupReq.result;
+
+				var newItem = { "name": bkmkName, "address": bkmkAddress };
+				group.bookmarks.push(newItem);
+				groupsStore.put(group);
+
+				db.close();
+				loadBookmarks();
+				$(".modal").modal("hide");
 			}
-
-			db.close();
-			loadBookmarks();
-			$(".modal").modal("hide");
 		}
 
 		openDBRequest.onerror = function (e) { console.log(e); }
