@@ -62,10 +62,19 @@ function groupMoved(dropEvt) {
 			groupsStore.getAll().onsuccess = function (evt) {
 				var groups = evt.target.result;
 
-				for (let g of groups) {
-					if (g.groupIndex > oldIndex && g.groupIndex <= newIndex) {
-						g.groupIndex--;
-						groupsStore.put(g);
+				if (newIndex > oldIndex) {
+					for (let g of groups) {
+						if (g.groupIndex > oldIndex && g.groupIndex <= newIndex) {
+							g.groupIndex--;
+							groupsStore.put(g);
+						}
+					}
+				} else { // oldIndex > newIndex
+					for (let g of groups) {
+						if (g.groupIndex < oldIndex && g.groupIndex >= newIndex) {
+							g.groupIndex++;
+							groupsStore.put(g);
+						}
 					}
 				}
 
