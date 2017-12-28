@@ -80,9 +80,21 @@ function deleteGroup(e) {
 		var db = dbe.target.result;
 
 		var groupsStore = db.transaction("Groups", "readwrite").objectStore("Groups");
-		var delReq = groupsStore.delete(groupIndex);
-		delReq.onsuccess = function (dele) {
-			$("#group-" + groupIndex).remove();
+
+		groupsStore.getAll().onsuccess = function (getEvt) {
+			var groups = getEvt.target.result;
+
+			var lastIndex = -1;
+			for (item of groups) {
+				if (item.groupIndex > groupIndex) {
+					lastIndex = item.groupIndex;
+					item.groupIndex--;
+					groupsStore.put(item);
+				}
+			}
+
+			groupsStore.delete(lastIndex);
+			loadBookmarks();
 		}
 	}
 
