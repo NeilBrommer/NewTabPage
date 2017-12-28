@@ -43,6 +43,10 @@ body {
 	min-height: 31px;
 }
 
+.dragHandle, .dragGroupHandle {
+	cursor: move;
+}
+
 .navbar {
 	background: transparent !important;
 }

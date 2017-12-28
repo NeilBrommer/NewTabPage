@@ -5,6 +5,7 @@ $(document).ready(function () {
 function toggleEditing (e) {
 	var btnEdit = $("#btnEdit");
 	if (btnEdit.hasClass("btn-warning")) {
+		$("#cardList").sortable("destroy");
 		btnEdit.removeClass("btn-warning");
 		$("#btnImport").prop("disabled", false);
 		$("#btnAdd").prop("disabled", false);
@@ -17,6 +18,7 @@ function toggleEditing (e) {
 
 		$(".btnDel").hide(200);
 		$(".btnDelGroup").hide(200);
+		$(".dragGroupHandle").hide(200);
 		$(".bookmark").off("click", disableLink);
 		$(".btnDel").off("click", deleteBookmark);
 		$(".btnDelGroup").off("click", deleteGroup);
@@ -25,11 +27,56 @@ function toggleEditing (e) {
 		$("#btnImport").prop("disabled", true);
 		$("#btnAdd").prop("disabled", true);
 
+		$("#cardList").sortable({
+			group: { name: "bookmarksGroups" },
+			draggable: ".bookmarkGroupContainer",
+			handle: ".dragGroupHandle",
+			animation: 100,
+			onEnd: groupMoved
+		});
+
 		$(".btnDel").show(200);
 		$(".btnDelGroup").show(200);
+		$(".dragGroupHandle").show(200);
 		$(".bookmark").click(disableLink);
 		$(".btnDel").click(deleteBookmark);
 		$(".btnDelGroup").click(deleteGroup);
+	}
+}
+
+function groupMoved(dropEvt) {
+	var newIndex = dropEvt.newIndex;
+	var oldIndex = dropEvt.oldIndex;
+
+	var movedCard = $($(dropEvt.item).children()[0]);
+	var groupName = movedCard.data("group-name");
+	var groupIndex = movedCard.data("group-index");
+
+	if (oldIndex != newIndex) {
+		var openDBRequest = window.indexedDB.open("bookmarks");
+
+		openDBRequest.onsuccess = function (e) {
+			var db = e.target.result;
+
+			var groupsStore = db.transaction("Groups", "readwrite").objectStore("Groups");
+			groupsStore.getAll().onsuccess = function (evt) {
+				var groups = evt.target.result;
+
+				for (let g of groups) {
+					if (g.groupIndex > oldIndex && g.groupIndex <= newIndex) {
+						g.groupIndex--;
+						groupsStore.put(g);
+					}
+				}
+
+				groups[oldIndex].groupIndex = newIndex;
+				groupsStore.put(groups[oldIndex]);
+
+				db.close();
+			}
+		}
+
+		openDBRequest.onerror = function (err) { console.log(err); }
 	}
 }
 
@@ -85,7 +132,7 @@ function deleteGroup(e) {
 			var groups = getEvt.target.result;
 
 			var lastIndex = -1;
-			for (item of groups) {
+			for (let item of groups) {
 				if (item.groupIndex > groupIndex) {
 					lastIndex = item.groupIndex;
 					item.groupIndex--;
