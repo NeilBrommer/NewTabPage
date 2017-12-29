@@ -72,8 +72,16 @@ pre {
 	background: rgba(255, 255, 255, 0.24);
 }
 
+#exportText, #importText {
+	font-family: monospace;
+}
+
 .clickable {
 	cursor: pointer;
+}
+
+textarea {
+	white-space: pre;
 }
 
 /* set the width of the main container based on element width */

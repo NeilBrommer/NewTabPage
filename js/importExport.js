@@ -1,12 +1,13 @@
 $(document).ready(function () {
 	$("#importExportModal").on("shown.bs.modal", showBookmarkData);
-
+	$("#importExportModal").on("show.bs.modal", showImportModal);
 	$("#btnImportDialog").click(importBookmarks);
-
-	$("#exportText").click(function () {
-		$("#exportText").select();
-	});
+	$("#copyExport").click(copyExport);
 });
+
+function showImportModal(e) {
+	$("#copyExportTxt").removeClass("text-success text-danger").addClass("text-muted").text("Copy");
+}
 
 function showBookmarkData() {
 	var openDBRequest = window.indexedDB.open("bookmarks");
@@ -115,4 +116,23 @@ function arrayContains(array, searchFor) {
 	}
 
 	return false;
+}
+
+function copyExport(e) {
+	e.preventDefault();
+
+	var exportBox = $("#exportText");
+	var copyLink = $("#copyExportTxt");
+	exportBox.select();
+
+	try {
+		var successful = document.execCommand("copy");
+		if (successful) {
+			copyLink.removeClass("text-muted").addClass("text-success").text("Copied successfully!");
+		} else {
+			copyLink.removeClass("text-muted").addClass("text-danger").text("Copy failed");
+		}
+	} catch (err) {
+		copyLink.removeClass("text-muted").addClass("text-danger").text("Copy failed");
+	}
 }
