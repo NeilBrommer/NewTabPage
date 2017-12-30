@@ -47,11 +47,3 @@ function setBackground(num, dark) {
 		$(".navbar-toggler").removeClass("toggler-bg-light btn-light").addClass("toggler-bg-dark btn-dark");
 	}
 }
-
-function initDB(db) {
-	// use a table to keep track of the order of groups
-	var groupStore = db.createObjectStore("groupIndexes", { keyPath: "title" });
-	groupStore.createIndex("title", "groupName", { unique: true });
-	groupStore.createIndex("groupIndex", "groupIndex", { unique: true });
-	return groupStore;
-}
