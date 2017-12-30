@@ -7,6 +7,8 @@ $(document).ready(function () {
 
 function showImportModal(e) {
 	$("#copyExportTxt").removeClass("text-success text-danger").addClass("text-muted").text("Copy");
+	$("#exportText").val("");
+	$("#importText").val("");
 }
 
 function showBookmarkData() {
@@ -15,12 +17,10 @@ function showBookmarkData() {
 	openDBRequest.onsuccess = function (e) {
 		var db = e.target.result;
 
-		db.transaction("Groups").objectStore("Groups").getAllKeys().onsuccess = function (evt) {
-			var data = JSON.stringify(bookmarkList, null, 4);
-			if (data != null)
-				$("#exportText").text(data);
-			else
-				$("#exportText").text("[]");
+		db.transaction("Groups").objectStore("Groups").getAll().onsuccess = function (evt) {
+			var res = evt.target.result;
+			var data = JSON.stringify(res, null, 4);
+			$("#exportText").val(data);
 		}
 	}
 }
@@ -44,8 +44,6 @@ function importBookmarks() {
 
 function setList(data) {
 	// empty the DB and fill it with the new data
-	bookmarkList = data;
-
 	var openDBRequest = window.indexedDB.open("bookmarks");
 
 	openDBRequest.onsuccess = function (e) {
