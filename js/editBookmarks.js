@@ -3,62 +3,10 @@ $(document).ready(function () {
 });
 
 function toggleEditing (e) {
-	var btnEdit = $("#btnEdit");
-	if (btnEdit.hasClass("btn-warning")) {
-		$(".bookmarkGroup").each(function (index) {
-			$(this).sortable("destroy");
-		});
-		$("#cardList").sortable("destroy");
-
-		btnEdit.removeClass("btn-warning");
-		$("#btnImport").prop("disabled", false);
-		$("#btnAdd").prop("disabled", false);
-
-		if ($("#btnAbout").hasClass("btn-light")) {
-			btnEdit.addClass("btn-light");
-		} else {
-			btnEdit.addClass("btn-dark");
-		}
-
-		$(".btnDel").hide(200);
-		$(".btnDelGroup").hide(200);
-		$(".dragHandle").hide(200);
-		$(".dragGroupHandle").hide(200);
-		$(".bookmark").off("click", disableLink);
-		$(".btnDel").off("click", deleteBookmark);
-		$(".btnDelGroup").off("click", deleteGroup);
-	} else {
-		btnEdit.removeClass("btn-light btn-dark").addClass("btn-warning");
-		$("#btnImport").prop("disabled", true);
-		$("#btnAdd").prop("disabled", true);
-
-		$(".bookmarkGroup").each(function (index) {
-			var item = $(this);
-			item.sortable({
-				group: { name: "bookmarkLists", pull: true, put: true },
-				draggable: ".bookmark",
-				handle: ".dragHandle",
-				animation: 100,
-				onEnd: bookmarkMoved
-			});
-		});
-
-		$("#cardList").sortable({
-			group: { name: "bookmarksGroups" },
-			draggable: ".bookmarkGroupContainer",
-			handle: ".dragGroupHandle",
-			animation: 100,
-			onEnd: groupMoved
-		});
-
-		$(".btnDel").show(200);
-		$(".btnDelGroup").show(200);
-		$(".dragHandle").show(200);
-		$(".dragGroupHandle").show(200);
-		$(".bookmark").click(disableLink);
-		$(".btnDel").click(deleteBookmark);
-		$(".btnDelGroup").click(deleteGroup);
-	}
+	if ($("#btnEdit").hasClass("btn-warning"))
+		disableEditing();
+	else
+		enableEditing();
 }
 
 function groupMoved(dropEvt) {
@@ -230,6 +178,64 @@ function deleteGroup(e) {
 		console.error(e);
 		window.alert("There was an error deleting the group");
 	}
+}
+
+function enableEditing() {
+	$("#btnEdit").removeClass("btn-light btn-dark").addClass("btn-warning");
+	$("#btnImport").prop("disabled", true);
+	$("#btnAdd").prop("disabled", true);
+
+	$(".bookmarkGroup").each(function (index) {
+		var item = $(this);
+		item.sortable({
+			group: { name: "bookmarkLists", pull: true, put: true },
+			draggable: ".bookmark",
+			handle: ".dragHandle",
+			animation: 100,
+			onEnd: bookmarkMoved
+		});
+	});
+
+	$("#cardList").sortable({
+		group: { name: "bookmarksGroups" },
+		draggable: ".bookmarkGroupContainer",
+		handle: ".dragGroupHandle",
+		animation: 100,
+		onEnd: groupMoved
+	});
+
+	$(".btnDel").show(200);
+	$(".btnDelGroup").show(200);
+	$(".dragHandle").show(200);
+	$(".dragGroupHandle").show(200);
+	$(".bookmark").click(disableLink);
+	$(".btnDel").click(deleteBookmark);
+	$(".btnDelGroup").click(deleteGroup);
+}
+
+function disableEditing() {
+	$(".bookmarkGroup").each(function (index) {
+		$(this).sortable("destroy");
+	});
+	$("#cardList").sortable("destroy");
+
+	$("#btnEdit").removeClass("btn-warning");
+	$("#btnImport").prop("disabled", false);
+	$("#btnAdd").prop("disabled", false);
+
+	if ($("#btnAbout").hasClass("btn-light")) {
+		$("#btnEdit").addClass("btn-light");
+	} else {
+		$("#btnEdit").addClass("btn-dark");
+	}
+
+	$(".btnDel").hide(200);
+	$(".btnDelGroup").hide(200);
+	$(".dragHandle").hide(200);
+	$(".dragGroupHandle").hide(200);
+	$(".bookmark").off("click", disableLink);
+	$(".btnDel").off("click", deleteBookmark);
+	$(".btnDelGroup").off("click", deleteGroup);
 }
 
 function removeFromArray(arr, index) {
