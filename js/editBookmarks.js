@@ -111,12 +111,11 @@ function bookmarkMoved(dropEvt) {
 }
 
 function deleteBookmark(e) {
-	var item = $(this);
-	var group = item.data("group");
-	var key = item.data("key");
-	var groupIndex = item.data("group-index");
-
-	var bookmarkItem = $("#" + group + "-" + key);
+	var item = $(this).parent();
+	var groupName = item.parent().data("group");
+	var groupIndex = item.parent().data("group-index");
+	var bookmarkIndex = item.index();
+	var bookmarkItem = $("#" + groupName + "-" + bookmarkIndex);
 
 	var openDBRequest = window.indexedDB.open("bookmarks");
 
@@ -127,13 +126,7 @@ function deleteBookmark(e) {
 		groupsStore.get(groupIndex).onsuccess = function (getEvt) {
 			var groupData = getEvt.target.result;
 
-			// remove the bookmark from the group object
-			var bookmarkData = {name: bookmarkItem.data("name"), address: bookmarkItem.data("address")};
-			groupData.bookmarks = groupData.bookmarks.filter(function (item) {
-				if (item.name != bookmarkData.name && item.address != bookmarkData.address)
-					return true;
-				return false;
-			});
+			groupData.bookmarks = removeFromArray(groupData.bookmarks, bookmarkIndex);
 
 			groupsStore.put(groupData);
 			bookmarkItem.remove();
