@@ -87,15 +87,13 @@ function buildCard(title, groupIndex, itemList) {
 	var btnDrag = $("<span>").addClass("mr-2 start-hidden dragGroupHandle")
 		.append($("<span>").addClass("fas fa-bars"));
 	var btnDel = $("<span>")
-		.attr("data-group", groupIndex)
 		.addClass("btnDelGroup far fa-trash-alt float-right mt-1 start-hidden text-danger clickable");
 	btnDel.appendTo(cardHead);
 	btnDrag.prependTo(cardHead);
 	card.append(cardHead);
 
 	var cardList = $("<div>");
-	cardList.addClass("list-group list-group-flush bookmarkGroup")
-		.attr({"data-group": title, "data-group-index": groupIndex});
+	cardList.addClass("list-group list-group-flush bookmarkGroup");
 	card.append(cardList);
 
 	for (var i = 0; i < itemList.length; i++) {
@@ -106,7 +104,6 @@ function buildCard(title, groupIndex, itemList) {
 			.append($("<span>").addClass("fas fa-bars"));
 
 		var del = $("<span>")
-			.attr({"data-group": title, "data-group-index": groupIndex, "data-key": i})
 			.addClass("btnDel far fa-trash-alt float-right mt-1 start-hidden text-danger");
 		del.css("cursor: pointer;");
 

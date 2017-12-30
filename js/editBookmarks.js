@@ -59,8 +59,8 @@ function bookmarkMoved(dropEvt) {
 	var newIndex = dropEvt.newIndex;
 
 	if (dropEvt.from != dropEvt.to) {
-		var oldGroupIndex = $(dropEvt.from).data("group-index");
-		var newGroupIndex = $(dropEvt.to).data("group-index");
+		var oldGroupIndex = $(dropEvt.from).parent().data("group-index");
+		var newGroupIndex = $(dropEvt.to).parent().data("group-index");
 
 		var item = $(dropEvt.item);
 		var itemData = {name: item.data("name"), address: item.data("address")};
@@ -87,7 +87,7 @@ function bookmarkMoved(dropEvt) {
 		}
 		openDBRequest.onerror = function (err) { console.error(err); }
 	} else if (oldIndex != newIndex) {
-		var groupIndex = $(dropEvt.from).data("group-index");
+		var groupIndex = $(dropEvt.from).parent().data("group-index");
 
 		var openDBRequest = window.indexedDB.open("bookmarks");
 		openDBRequest.onsuccess = function (dbe) {
@@ -112,8 +112,8 @@ function bookmarkMoved(dropEvt) {
 
 function deleteBookmark(e) {
 	var item = $(this).parent();
-	var groupName = item.parent().data("group");
-	var groupIndex = item.parent().data("group-index");
+	var groupName = item.parent().parent().data("group-name");
+	var groupIndex = item.parent().parent().data("group-index");
 	var bookmarkIndex = item.index();
 	var bookmarkItem = $("#" + groupName + "-" + bookmarkIndex);
 
@@ -141,7 +141,7 @@ function deleteBookmark(e) {
 
 function deleteGroup(e) {
 	var group = $(this); // the delete group button
-	var groupIndex = group.data("group");
+	var groupIndex = group.parent().parent().data("group-index");
 
 	var openDBRequest = window.indexedDB.open("bookmarks");
 
