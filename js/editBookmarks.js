@@ -5,7 +5,11 @@ $(document).ready(function () {
 function toggleEditing (e) {
 	var btnEdit = $("#btnEdit");
 	if (btnEdit.hasClass("btn-warning")) {
+		$(".bookmarkGroup").each(function (index) {
+			$(this).sortable("destroy");
+		});
 		$("#cardList").sortable("destroy");
+
 		btnEdit.removeClass("btn-warning");
 		$("#btnImport").prop("disabled", false);
 		$("#btnAdd").prop("disabled", false);
@@ -18,6 +22,7 @@ function toggleEditing (e) {
 
 		$(".btnDel").hide(200);
 		$(".btnDelGroup").hide(200);
+		$(".dragHandle").hide(200);
 		$(".dragGroupHandle").hide(200);
 		$(".bookmark").off("click", disableLink);
 		$(".btnDel").off("click", deleteBookmark);
@@ -26,6 +31,17 @@ function toggleEditing (e) {
 		btnEdit.removeClass("btn-light btn-dark").addClass("btn-warning");
 		$("#btnImport").prop("disabled", true);
 		$("#btnAdd").prop("disabled", true);
+
+		$(".bookmarkGroup").each(function (index) {
+			var item = $(this);
+			item.sortable({
+				group: { name: "bookmarkLists", pull: true, put: true },
+				draggable: ".bookmark",
+				handle: ".dragHandle",
+				animation: 100,
+				onEnd: bookmarkMoved
+			});
+		});
 
 		$("#cardList").sortable({
 			group: { name: "bookmarksGroups" },
@@ -37,6 +53,7 @@ function toggleEditing (e) {
 
 		$(".btnDel").show(200);
 		$(".btnDelGroup").show(200);
+		$(".dragHandle").show(200);
 		$(".dragGroupHandle").show(200);
 		$(".bookmark").click(disableLink);
 		$(".btnDel").click(deleteBookmark);
@@ -89,6 +106,62 @@ function groupMoved(dropEvt) {
 	}
 }
 
+function bookmarkMoved(dropEvt) {
+	var oldIndex = dropEvt.oldIndex;
+	var newIndex = dropEvt.newIndex;
+
+	if (dropEvt.from != dropEvt.to) {
+		var oldGroupIndex = $(dropEvt.from).data("group-index");
+		var newGroupIndex = $(dropEvt.to).data("group-index");
+
+		var item = $(dropEvt.item);
+		var itemData = {name: item.data("name"), address: item.data("address")};
+
+		var openDBRequest = window.indexedDB.open("bookmarks");
+		openDBRequest.onsuccess = function (dbe) {
+			var db = dbe.target.result;
+			var groupsStore = db.transaction("Groups", "readwrite").objectStore("Groups");
+
+			groupsStore.getAll().onsuccess = function (gete) {
+				var groups = gete.target.result;
+
+				var oldGroupData = groups[oldGroupIndex];
+				var newGroupData = groups[newGroupIndex];
+
+				oldGroupData.bookmarks = removeFromArray(oldGroupData.bookmarks, oldIndex);
+				groupsStore.put(oldGroupData);
+
+				newGroupData.bookmarks = addToArray(newGroupData.bookmarks, itemData, newIndex);
+				groupsStore.put(newGroupData);
+
+				db.close();
+			}
+		}
+		openDBRequest.onerror = function (err) { console.error(err); }
+	} else if (oldIndex != newIndex) {
+		var groupIndex = $(dropEvt.from).data("group-index");
+
+		var openDBRequest = window.indexedDB.open("bookmarks");
+		openDBRequest.onsuccess = function (dbe) {
+			var db = dbe.target.result;
+			var groupsStore = db.transaction("Groups", "readwrite").objectStore("Groups");
+
+			groupsStore.get(groupIndex).onsuccess = function (gete) {
+				var groupData = gete.target.result;
+
+				var item = groupData.bookmarks[oldIndex];
+
+				groupData.bookmarks = removeFromArray(groupData.bookmarks, oldIndex);
+				groupData.bookmarks = addToArray(groupData.bookmarks, item, newIndex);
+
+				groupsStore.put(groupData);
+				db.close();
+			}
+		}
+		openDBRequest.onerror = function (err) { console.error(err); }
+	}
+}
+
 function deleteBookmark(e) {
 	var item = $(this);
 	var group = item.data("group");
@@ -114,7 +187,6 @@ function deleteBookmark(e) {
 				return false;
 			});
 
-			// no need to provide key since keyPath is set
 			groupsStore.put(groupData);
 			bookmarkItem.remove();
 		}
@@ -158,6 +230,32 @@ function deleteGroup(e) {
 		console.error(e);
 		window.alert("There was an error deleting the group");
 	}
+}
+
+function removeFromArray(arr, index) {
+	var newArr = [];
+	for (var i = 0; i < arr.length; i++) {
+		if (i != index)
+			newArr.push(arr[i]);
+	}
+	return newArr;
+}
+
+function addToArray(arr, item, index) {
+	if (index == arr.length) {
+		arr.push(item);
+		return arr;
+	}
+
+	var newArr = [];
+	for (var i = 0; i < arr.length; i++) {
+		if (i == index)
+			newArr.push(item);
+
+		newArr.push(arr[i]);
+	}
+
+	return newArr;
 }
 
 function disableLink(e) {

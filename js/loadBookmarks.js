@@ -75,7 +75,7 @@ function buildGroup(groupInfo, placeholder) {
 function buildCard(title, groupIndex, itemList) {
 	var card = $("<div>");
 	card.attr({
-		"id": "group-" + groupIndex,
+		"id": "group-" + title,
 		"class": "card",
 		"data-group-name": title,
 		"data-group-index": groupIndex
@@ -94,7 +94,8 @@ function buildCard(title, groupIndex, itemList) {
 	card.append(cardHead);
 
 	var cardList = $("<div>");
-	cardList.addClass("list-group list-group-flush bookmarkGroup").attr("data-group", title);
+	cardList.addClass("list-group list-group-flush bookmarkGroup")
+		.attr({"data-group": title, "data-group-index": groupIndex});
 	card.append(cardList);
 
 	for (var i = 0; i < itemList.length; i++) {
