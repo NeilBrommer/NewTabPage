@@ -3,3 +3,5 @@ lib/
 img/
 
 bookmarkList\.json
+
+.vscode/

@@ -121,50 +121,43 @@
 					</button>
 				</div>
 				<div class="modal-body">
-					<p>
-						<a href="https://github.com/NeilBrommer/NewTabPage">Project on GitHub</a>
-					</p>
-					<p>
-						This page keeps a list of bookmarks separated into groups. It's intended to be used a a new tab page.
-						It uses IndexedDB to store the list of bookmarks in the browser rather than storing them server side.
-					</p>
-					<p>
-						This site uses Danny Care's <a href="https://danny.care/portfolio/bitday/" target="_blank">Bitday</a>
-						wallpapers. The background changes based on the time of day.
-					</p>
-					<p>
-						This site uses <a href="https://getbootstrap.com/" target="_blank">Bootstrap</a>,
-						<a href="https://jquery.com/" target="_blank">JQuery</a>, and
-						<a href="http://fontawesome.io/">Font Awesome</a>.
-					</p>
-					<p>
-						Editing bookmarks is currently not supported. To move bookmarks, you need to use the
-						import/export function and manually edit the JSON data. The format for this is:
-					</p>
-					<pre class="rounded border"><code>[
-	{
-		"title": "Group title",
-		"bookmarks": [
-			{
-				"name": "Bookmark 1",
-				"address": "http://example.com"
-			},
-			{
-				"name": "Bookmark 2",
-				"address": "http://example.net"
-			}
-		]
-	},
-	{
-		"title": "Group 2",
-		"bookmarks": [
-			{
-				"name": "Bookmark 3",
-				"address": "http://example.org"
-			}
-		]
-	}
-]</code></pre>
+					<ul class="nav nav-tabs" id="tabContent">
+						<li class="nav-item">
+							<a id="aboutTab" class="nav-link active" href="#aboutTabContent" data-toggle="tab">General</a>
+						</li>
+						<li class="nav-item">
+							<a id="attribTab" class="nav-link" href="#attribTabContent" data-toggle="tab">Attribution</a>
+						</li>
+					</ul>
+
+					<div class="tab-content mt-3">
+						<div id="aboutTabContent" class="tab-pane fade show active">
+							<p>
+								<a href="https://github.com/NeilBrommer/NewTabPage">This project on GitHub</a>
+							</p>
+							<p>
+								This page keeps a list of bookmarks separated into groups. It's intended to be used a a new tab page.
+								It uses IndexedDB to store the list of bookmarks in the browser rather than storing them server side.
+							</p>
+						</div>
+
+						<div id="attribTabContent" class="tab-pane fade">
+							<p>
+								This site uses Danny Care's <a href="https://danny.care/portfolio/bitday/" target="_blank">Bitday</a>
+								wallpapers. The background changes based on the time of day.
+							</p>
+							<h3>Libraries</h3>
+							<p>
+								<a href="https://getbootstrap.com/" target="_blank">Bootstrap</a>
+							</p>
+							<p>
+								<a href="https://jquery.com/" target="_blank">JQuery</a>
+							</p>
+							<p>
+								<a href="http://fontawesome.io/">Font Awesome</a>
+							</p>
+						</div>
+					</div>
 				</div>
 				<div class="modal-footer">
 					<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
