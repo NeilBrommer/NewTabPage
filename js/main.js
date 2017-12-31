@@ -29,11 +29,11 @@ function calcBackground() {
 	}
 }
 
-function setBackground(address, dark) {
+function setBackground(num) {
 	// dark is a boolean that indicates the brightness of the background
-	$("body").css("background-image", "url(" + address + ")");
+	$("body").css("background-image", "url(" + backgroundList[num].address + ")");
 
-	if (dark) {
+	if (backgroundList[num].dark) {
 		$(".navbar").removeClass("navbar-dark").addClass("navbar-light");
 		$(".navbar-toggler").removeClass("toggler-bg-dark btn-dark").addClass("toggler-bg-light btn-light");
 	} else {
