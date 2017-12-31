@@ -153,17 +153,16 @@ function deleteGroup(e) {
 		groupsStore.getAll().onsuccess = function (getEvt) {
 			var groups = getEvt.target.result;
 
-			var lastIndex = -1;
 			for (let item of groups) {
 				if (item.groupIndex > groupIndex) {
-					lastIndex = item.groupIndex;
 					item.groupIndex--;
 					groupsStore.put(item);
 				}
 			}
 
-			groupsStore.delete(lastIndex);
 			loadBookmarks();
+			groupsStore.delete(groups.length - 1);
+			db.close();
 		}
 	}
 
