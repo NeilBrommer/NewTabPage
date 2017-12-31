@@ -160,9 +160,19 @@ function deleteGroup(e) {
 				}
 			}
 
-			loadBookmarks();
 			groupsStore.delete(groups.length - 1);
 			db.close();
+
+			$("#cardList").children().each(function (index, item) {
+				item = $(item);
+				if (index == groupIndex) {
+					item.hide(300, "swing", e => item.remove());
+				} else if (index > groupIndex) {
+					// modify id and data to reflect new index
+					$(item.children()[0]).attr("data-group-index", index - 1);
+					item.attr("id", "group-" + (index - 1));
+				}
+			});
 		}
 	}
 
