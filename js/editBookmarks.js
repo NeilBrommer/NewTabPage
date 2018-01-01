@@ -32,6 +32,13 @@ function groupMoved(dropEvt) {
 						if (g.groupIndex > oldIndex && g.groupIndex <= newIndex) {
 							g.groupIndex--;
 							groupsStore.put(g);
+
+							// modify the group's card
+							var cardContainer = $("#group-" + (g.groupIndex + 1));
+							cardContainer.attr("id", "group" + g.groupIndex);
+
+							var card = $(cardContainer.children()[0]);
+							card.attr("data-group-index", g.groupIndex);
 						}
 					}
 				} else { // oldIndex > newIndex
@@ -39,12 +46,28 @@ function groupMoved(dropEvt) {
 						if (g.groupIndex < oldIndex && g.groupIndex >= newIndex) {
 							g.groupIndex++;
 							groupsStore.put(g);
+
+							// modify the group's card
+							var cardContainer = $("#group-" + (g.groupIndex - 1));
+							cardContainer.attr("id", "group" + g.groupIndex);
+
+							var card = $(cardContainer.children()[0]);
+							card.attr("data-group-index", g.groupIndex);
 						}
 					}
 				}
 
-				groups[oldIndex].groupIndex = newIndex;
-				groupsStore.put(groups[oldIndex]);
+				var movedGroupData = groups[oldIndex];
+
+				movedGroupData.groupIndex = newIndex;
+				groupsStore.put(movedGroupData);
+
+				// modify the group's card
+				var cardContainer = $("#group-" + oldIndex);
+				cardContainer.attr("id", "group" + newIndex);
+
+				var card = $(cardContainer.children()[0]);
+				card.attr("data-group-index", newIndex);
 
 				db.close();
 			}
