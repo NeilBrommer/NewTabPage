@@ -28,8 +28,8 @@ function calcBackground() {
 
 		var period = (24 / backgroundList.length) * 60; // in minutes
 
-		var background = backgroundList[Math.floor(total / period)];
-		setBackground(background.address, background.dark);
+		var index = Math.floor(total / period);
+		setBackground(index);
 	}
 }
 
