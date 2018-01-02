@@ -12,6 +12,11 @@ body {
 
 	tab-size: 4;
 	-moz-tab-size: 4;
+
+	-webkit-transition: background-image 1.0s ease-in-out;
+	-moz-transition: background-image 1.0s ease-in-out;
+	-o-transition: background-image 1.0s ease-in-out;
+	transition: background-image 1.0s ease-in-out;
 }
 
 .card-header {
