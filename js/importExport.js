@@ -5,7 +5,7 @@ $(document).ready(function () {
 	$("#copyExport").click(copyExport);
 });
 
-function showImportModal(e) {
+function showImportModal() {
 	$("#copyExportTxt").removeClass("text-success text-danger").addClass("text-muted").text("Copy");
 	$("#exportText").val("");
 	$("#importText").val("");
@@ -14,14 +14,16 @@ function showImportModal(e) {
 function showBookmarkData() {
 	var openDBRequest = window.indexedDB.open("bookmarks");
 
-	openDBRequest.onsuccess = function (e) {
-		var db = e.target.result;
+	openDBRequest.onsuccess = function (openEvt) {
+		var db = openEvt.target.result;
 
-		db.transaction("Groups").objectStore("Groups").getAll().onsuccess = function (evt) {
-			var res = evt.target.result;
+		db.transaction("Groups").objectStore("Groups").getAll().onsuccess = function (getAllEvt) {
+			var res = getAllEvt.target.result;
 			var data = JSON.stringify(res, null, 4);
 			$("#exportText").val(data);
 		}
+
+		db.close();
 	}
 }
 
@@ -29,7 +31,7 @@ function importBookmarks() {
 	try {
 		var newData = $.parseJSON($("#importText").val());
 	} catch (err) {
-		console.error("Import failed: " + err.message);
+		console.error(err);
 		window.alert("Invalid Format");
 		return;
 	}
@@ -53,7 +55,7 @@ function setList(data) {
 		groupStore.clear();
 
 		// create the object stores
-		for (group of data) {
+		for (let group of data) {
 			groupStore.add(group);
 		}
 
@@ -108,7 +110,7 @@ function validateBookmarks(bookmarks) {
 }
 
 function arrayContains(array, searchFor) {
-	for (item of array) {
+	for (let item of array) {
 		if (item == searchFor)
 			return true;
 	}

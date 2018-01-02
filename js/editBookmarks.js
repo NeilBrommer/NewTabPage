@@ -2,7 +2,7 @@ $(document).ready(function () {
 	$("#btnEdit").click(toggleEditing);
 });
 
-function toggleEditing (e) {
+function toggleEditing () {
 	if ($("#btnEdit").hasClass("btn-warning"))
 		disableEditing();
 	else
@@ -15,17 +15,16 @@ function groupMoved(dropEvt) {
 
 	var movedCard = $($(dropEvt.item).children()[0]);
 	var groupName = movedCard.data("group-name");
-	var groupIndex = movedCard.data("group-index");
 
 	if (oldIndex != newIndex) {
 		var openDBRequest = window.indexedDB.open("bookmarks");
 
-		openDBRequest.onsuccess = function (e) {
-			var db = e.target.result;
+		openDBRequest.onsuccess = function (openEvt) {
+			var db = openEvt.target.result;
 
 			var groupsStore = db.transaction("Groups", "readwrite").objectStore("Groups");
-			groupsStore.getAll().onsuccess = function (evt) {
-				var groups = evt.target.result;
+			groupsStore.getAll().onsuccess = function (getAllEvt) {
+				var groups = getAllEvt.target.result;
 
 				if (newIndex > oldIndex) {
 					for (let g of groups) {
@@ -34,11 +33,11 @@ function groupMoved(dropEvt) {
 							groupsStore.put(g);
 
 							// modify the group's card
-							var cardContainer = $("#group-" + (g.groupIndex + 1));
-							cardContainer.attr("id", "group" + g.groupIndex);
+							var cardContainer = $("#group-" + (g.groupIndex + 1))
+								.attr("id", "group" + g.groupIndex);
 
-							var card = $(cardContainer.children()[0]);
-							card.attr("data-group-index", g.groupIndex);
+							var card = $(cardContainer.children()[0])
+								.attr("data-group-index", g.groupIndex);
 						}
 					}
 				} else { // oldIndex > newIndex
@@ -57,23 +56,23 @@ function groupMoved(dropEvt) {
 					}
 				}
 
+				// update the moved group's data
 				var movedGroupData = groups[oldIndex];
-
 				movedGroupData.groupIndex = newIndex;
 				groupsStore.put(movedGroupData);
 
-				// modify the group's card
-				var cardContainer = $("#group-" + oldIndex);
-				cardContainer.attr("id", "group" + newIndex);
-
-				var card = $(cardContainer.children()[0]);
-				card.attr("data-group-index", newIndex);
+				// update the group's card
+				$(dropEvt.item).attr("id", "group" + newIndex);
+				movedCard.attr("data-group-index", newIndex);
 
 				db.close();
 			}
 		}
 
-		openDBRequest.onerror = function (err) { console.log(err); }
+		openDBRequest.onerror = function (err) {
+			console.log(err);
+			window.alert("Error moving group");
+		}
 	}
 }
 
@@ -89,12 +88,13 @@ function bookmarkMoved(dropEvt) {
 		var itemData = {name: item.data("name"), address: item.data("address")};
 
 		var openDBRequest = window.indexedDB.open("bookmarks");
-		openDBRequest.onsuccess = function (dbe) {
-			var db = dbe.target.result;
+
+		openDBRequest.onsuccess = function (openEvt) {
+			var db = openEvt.target.result;
 			var groupsStore = db.transaction("Groups", "readwrite").objectStore("Groups");
 
-			groupsStore.getAll().onsuccess = function (gete) {
-				var groups = gete.target.result;
+			groupsStore.getAll().onsuccess = function (getAllEvt) {
+				var groups = getAllEvt.target.result;
 
 				var oldGroupData = groups[oldGroupIndex];
 				var newGroupData = groups[newGroupIndex];
@@ -108,17 +108,22 @@ function bookmarkMoved(dropEvt) {
 				db.close();
 			}
 		}
-		openDBRequest.onerror = function (err) { console.error(err); }
+
+		openDBRequest.onerror = function (err) {
+			console.error(err);
+			window.alert("Error moving bookmark");
+		}
 	} else if (oldIndex != newIndex) {
 		var groupIndex = $(dropEvt.from).parent().data("group-index");
 
 		var openDBRequest = window.indexedDB.open("bookmarks");
-		openDBRequest.onsuccess = function (dbe) {
-			var db = dbe.target.result;
+
+		openDBRequest.onsuccess = function (openEvt) {
+			var db = openEvt.target.result;
 			var groupsStore = db.transaction("Groups", "readwrite").objectStore("Groups");
 
-			groupsStore.get(groupIndex).onsuccess = function (gete) {
-				var groupData = gete.target.result;
+			groupsStore.get(groupIndex).onsuccess = function (getEvt) {
+				var groupData = getEvt.target.result;
 
 				var item = groupData.bookmarks[oldIndex];
 
@@ -129,7 +134,11 @@ function bookmarkMoved(dropEvt) {
 				db.close();
 			}
 		}
-		openDBRequest.onerror = function (err) { console.error(err); }
+
+		openDBRequest.onerror = function (err) {
+			console.error(err);
+			window.alert("Error moving bookmark");
+		}
 	}
 }
 
@@ -142,8 +151,8 @@ function deleteBookmark(e) {
 
 	var openDBRequest = window.indexedDB.open("bookmarks");
 
-	openDBRequest.onsuccess = function (e) {
-		var db = e.target.result;
+	openDBRequest.onsuccess = function (openEvt) {
+		var db = openEvt.target.result;
 		var groupsStore = db.transaction("Groups", "readwrite").objectStore("Groups");
 
 		groupsStore.get(groupIndex).onsuccess = function (getEvt) {
@@ -153,28 +162,29 @@ function deleteBookmark(e) {
 
 			groupsStore.put(groupData);
 			bookmarkItem.hide(300, "swing", e => bookmarkItem.remove());
+
+			db.close();
 		}
 	}
 
-	openDBRequest.onerror = function (evt) {
-		console.log("Error", evt);
+	openDBRequest.onerror = function (err) {
+		console.log("Error", err);
 		window.alert("There was an error deleting the bookmark");
 	}
 }
 
-function deleteGroup(e) {
+function deleteGroup() {
 	var group = $(this); // the delete group button
 	var groupIndex = group.parent().parent().data("group-index");
 
 	var openDBRequest = window.indexedDB.open("bookmarks");
 
-	openDBRequest.onsuccess = function (dbe) {
-		var db = dbe.target.result;
-
+	openDBRequest.onsuccess = function (openEvt) {
+		var db = openEvt.target.result;
 		var groupsStore = db.transaction("Groups", "readwrite").objectStore("Groups");
 
-		groupsStore.getAll().onsuccess = function (getEvt) {
-			var groups = getEvt.target.result;
+		groupsStore.getAll().onsuccess = function (getAllEvt) {
+			var groups = getAllEvt.target.result;
 
 			for (let item of groups) {
 				if (item.groupIndex > groupIndex) {
@@ -199,8 +209,8 @@ function deleteGroup(e) {
 		}
 	}
 
-	openDBRequest.onerror = function (e) {
-		console.error(e);
+	openDBRequest.onerror = function (err) {
+		console.error(err);
 		window.alert("There was an error deleting the group");
 	}
 }
@@ -210,8 +220,8 @@ function enableEditing() {
 	$("#btnImport").prop("disabled", true);
 	$("#btnAdd").prop("disabled", true);
 
-	$(".bookmarkGroup").each(function (index) {
-		var item = $(this);
+	$(".bookmarkGroup").each(function (index, item) {
+		var item = $(item);
 		item.sortable({
 			group: { name: "bookmarkLists", pull: true, put: true },
 			draggable: ".bookmark",
@@ -239,8 +249,8 @@ function enableEditing() {
 }
 
 function disableEditing() {
-	$(".bookmarkGroup").each(function (index) {
-		$(this).sortable("destroy");
+	$(".bookmarkGroup").each(function (index, item) {
+		$(item).sortable("destroy");
 	});
 	$("#cardList").sortable("destroy");
 
@@ -265,26 +275,27 @@ function disableEditing() {
 
 function removeFromArray(arr, index) {
 	var newArr = [];
-	for (var i = 0; i < arr.length; i++) {
+	arr.forEach(function (item, i) {
 		if (i != index)
-			newArr.push(arr[i]);
-	}
+			newArr.push(item);
+	});
+
 	return newArr;
 }
 
-function addToArray(arr, item, index) {
+function addToArray(arr, itemToAdd, index) {
 	if (index == arr.length) {
 		arr.push(item);
 		return arr;
 	}
 
 	var newArr = [];
-	for (var i = 0; i < arr.length; i++) {
+	arr.forEach(function (item, i) {
 		if (i == index)
-			newArr.push(item);
+			newArr.push(itemToAdd);
 
-		newArr.push(arr[i]);
-	}
+		newArr.push(item);
+	});
 
 	return newArr;
 }

@@ -6,46 +6,36 @@ function loadBookmarks() {
 	$("#cardList").empty();
 	var openDBRequest = window.indexedDB.open("bookmarks");
 
-	openDBRequest.onsuccess = function (dbEvt) {
-		db = dbEvt.target.result;
-		dbVersion = db.version;
+	openDBRequest.onsuccess = function (openEvt) {
+		db = openEvt.target.result;
 
-		db.transaction(["Groups"], "readonly").objectStore("Groups").getAll().onsuccess = function (groupsEvt) {
+		db.transaction("Groups", "readonly").objectStore("Groups").getAll().onsuccess = function (groupsEvt) {
 			var groups = groupsEvt.target.result;
 			groups.sort(function (a, b) {
 				return a.groupIndex - b.groupIndex;
 			});
 
-			// use a placholder
+			// use a placholder to prevent problems with sortable
 			var cardList = $("#cardList");
 			for (let groupData of groups) {
-				$("<div>").attr("id", "group-" + groupData.groupIndex)
+				var placeholder = $("<div>").attr("id", "group-" + groupData.groupIndex)
 					.addClass("bookmarkGroupContainer")
 					.appendTo(cardList);
-			}
-
-			bookmarkList = [];
-
-			for (let groupData of groups) {
-				buildGroup(groupData, $("#group-" + groupData.groupIndex));
-				bookmarkList.push(groupData);
+				buildCard(groupData.title, groupData.groupIndex, groupData.bookmarks)
+					.appendTo(placeholder);
 			}
 
 			db.close();
 		};
 	}
 
-	openDBRequest.onerror = function (e) { console.log(e); }
+	openDBRequest.onupgradeneeded = function (openEvt) {
+		db = openEvt.target.result;
 
-	openDBRequest.onupgradeneeded = function (e) {
-		// the database doesn't exist
-		console.log("Creating database");
-		db = e.target.result;
-
-		var groupStore = db.createObjectStore("Groups", {keyPath: "groupIndex"});
-		groupStore.createIndex("groupIndex", "groupIndex", {unique: true});
-		groupStore.createIndex("title", "title", {unique: false});
-		groupStore.createIndex("bookmarks", "bookmarks", {unique: false});
+		var groupStore = db.createObjectStore("Groups", { keyPath: "groupIndex" });
+		groupStore.createIndex("groupIndex", "groupIndex", { unique: true });
+		groupStore.createIndex("title", "title", { unique: false });
+		groupStore.createIndex("bookmarks", "bookmarks", { unique: false });
 
 		var groupData = {
 			groupIndex: 0,
@@ -63,13 +53,15 @@ function loadBookmarks() {
 		};
 
 		groupStore.add(groupData);
+		db.close();
 
 		$("#aboutModal").modal("show");
 	}
-}
 
-function buildGroup(groupInfo, placeholder) {
-	buildCard(groupInfo.title, groupInfo.groupIndex, groupInfo.bookmarks).appendTo(placeholder);
+	openDBRequest.onerror = function (err) {
+		console.log(err);
+		window.alert("Error loading bookmarks");
+	}
 }
 
 function buildCard(title, groupIndex, itemList) {
@@ -81,26 +73,22 @@ function buildCard(title, groupIndex, itemList) {
 		"data-group-index": groupIndex
 	});
 
-	var cardHead = $("<div>");
-	cardHead.addClass("card-header");
-	cardHead.text(title);
-	var btnDrag = $("<span>").addClass("mr-2 start-hidden dragGroupHandle")
-		.append($("<span>").addClass("fas fa-bars"));
-	var btnDel = $("<span>")
-		.addClass("btnDelGroup far fa-trash-alt float-right mt-1 start-hidden text-danger clickable");
-	btnDel.appendTo(cardHead);
-	btnDrag.prependTo(cardHead);
-	card.append(cardHead);
+	var cardHead = $("<div>").addClass("card-header").text(title).appendTo(card);
+	$("<span>") // use wrapper, sortable has issues with <svg> dragHandle
+		.addClass("mr-2 start-hidden dragGroupHandle")
+		.append($("<span>").addClass("fas fa-bars")) // move group icon
+		.prependTo(cardHead);
+	$("<span>") // delete group button
+		.addClass("btnDelGroup far fa-trash-alt float-right mt-1 start-hidden text-danger clickable")
+		.appendTo(cardHead);
 
-	var cardList = $("<div>");
-	cardList.addClass("list-group list-group-flush bookmarkGroup");
-	card.append(cardList);
+	var cardList = $("<div>")
+		.addClass("list-group list-group-flush bookmarkGroup")
+		.appendTo(card);
 
-	for (var i = 0; i < itemList.length; i++) {
-		var item = itemList[i];
-		// the fa span gets replaced with an svg element, which causes problems
-		// with using it as a drag handle, so wrap it in the drag element
-		var handle = $("<span>").addClass("mr-2 start-hidden dragHandle")
+	itemList.forEach(function (item, i) {
+		var handle = $("<span>") // use wrapper, sortable has issues with <svg> dragHandle
+			.addClass("mr-2 start-hidden dragHandle")
 			.append($("<span>").addClass("fas fa-bars"));
 
 		var del = $("<span>")
@@ -119,7 +107,7 @@ function buildCard(title, groupIndex, itemList) {
 			.prepend(handle)
 			.append(del)
 			.appendTo(cardList);
-	}
+	});
 
 	return card;
 }

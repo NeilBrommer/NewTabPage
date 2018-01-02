@@ -1,23 +1,40 @@
 $(document).ready(function () {
-	$("#newBookmarkModal").on("shown.bs.modal", function () {
-		var combo = $("#newBookmarkGroup");
-		combo.empty();
-		combo.append($("<option>").attr({ "value": "--" })
-			.text("New Group"));
-
-		for (let group of bookmarkList) {
-			if (group != null)
-				combo.append($("<option>").attr({ "value": group.groupIndex })
-					.text(group.title));
-		}
-
-		$("#createGroup").prop("required", true);
-	});
-
+	$("#newBookmarkModal").on("shown.bs.modal", populateGroupList);
 	$("#addBookmarkForm").submit(addNewBookmark);
-
 	$("#newBookmarkGroup").on("change", selectGroupChanged);
 });
+
+function populateGroupList() {
+	var combo = $("#newBookmarkGroup");
+	combo.empty();
+	combo.append($("<option>").attr({ "value": "--" })
+		.text("New Group"));
+
+	var openDBRequest = window.indexedDB.open("bookmarks");
+
+	openDBRequest.onsuccess = function (openEvt) {
+		var db = openEvt.target.result;
+		var groupsStore = db.transaction("Groups", "readwrite").objectStore("Groups");
+
+		groupsStore.getAll().onsuccess = function (getAllEvt) {
+			var groups = getAllEvt.target.result;
+
+			for (let group of groups) {
+				combo.append($("<option>")
+					.attr({ "value": group.groupIndex })
+					.text(group.title));
+			}
+
+			$("#createGroup").prop("required", true);
+			db.close();
+		}
+	}
+
+	openDBRequest.onerror = function (err) {
+		console.error(err);
+		window.alert("Error building groups list");
+	}
+}
 
 function addNewBookmark(e) {
 	e.preventDefault();
@@ -31,42 +48,35 @@ function addNewBookmark(e) {
 		var newGroupName = $("#newBookMarkGroupNew").val();
 
 		var openDBRequest = window.indexedDB.open("bookmarks");
-		openDBRequest.onsuccess = function (e) {
-			var db = e.target.result;
+		openDBRequest.onsuccess = function (openEvt) {
+			var db = openEvt.target.result;
 			var groupsStore = db.transaction("Groups", "readwrite").objectStore("Groups");
 
-			groupsStore.getAll().onsuccess = function (evt) {
-				// find the largest index and use that +1
-				var groups = evt.target.result;
-
-				var largest = -1;
-				for (var group of groups) {
-					if (group.groupIndex > largest)
-						largest = group.groupIndex;
-				}
+			groupsStore.count().onsuccess = function (countEvt) {
+				var numGroups = countEvt.target.result;
 
 				var newGroup = {
-					groupIndex: largest + 1,
+					groupIndex: numGroups,
 					title: newGroupName,
 					bookmarks: [ { name: bkmkName, address: bkmkAddress } ]
 				};
 
 				groupsStore.add(newGroup);
-				// don't need to add to bookmarkList because loadBookmarks is
-				// being called
 
 				db.close();
 				loadBookmarks();
-				$(".modal").modal("hide");
+				$("#newBookmarkModal").modal("hide");
 			}
 		}
 
-		openDBRequest.onerror = function (e) { console.log(e); }
+		openDBRequest.onerror = function (err) {
+			console.log(err);
+			window.alert("There was an error creating the bookmark");
+		}
 	} else { // add to existing group
 		var openDBRequest = window.indexedDB.open("bookmarks");
-		openDBRequest.onsuccess = function (e) {
-			var db = e.target.result;
-
+		openDBRequest.onsuccess = function (openEvt) {
+			var db = openEvt.target.result;
 			var groupsStore = db.transaction("Groups", "readwrite").objectStore("Groups");
 
 			var groupReq = groupsStore.get(parseInt(bkmkGroup));
@@ -83,7 +93,10 @@ function addNewBookmark(e) {
 			}
 		}
 
-		openDBRequest.onerror = function (e) { console.log(e); }
+		openDBRequest.onerror = function (err) {
+			console.log(err);
+			window.alert("There was an error creating the bookmark");
+		}
 	}
 }
 
