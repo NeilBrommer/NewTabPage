@@ -1,4 +1,3 @@
-// use this when making changes so that there is no need to parse the page
 var backgroundList = [
 	{address: "img/11-Mid-Night.png", dark: true},
 	{address: "img/12-Late-Night.png", dark: true},
@@ -11,7 +10,8 @@ var backgroundList = [
 	{address: "img/07-Early-Evening.png", dark: false},
 	{address: "img/08-Mid-Evening.png", dark: true},
 	{address: "img/09-Late-Evening.png", dark: true},
-	{address: "img/10-Early-Night.png", dark: true}
+	{address: "img/10-Early-Night.png", dark: true},
+	{address: "img/10-Early-Night.png", dark: true} // for better timing
 ];
 
 $(document).ready(function () {
