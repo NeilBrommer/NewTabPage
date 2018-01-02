@@ -53,13 +53,12 @@ function loadBookmarks() {
 		};
 
 		groupStore.add(groupData);
-		db.close();
 
 		$("#aboutModal").modal("show");
 	}
 
 	openDBRequest.onerror = function (err) {
-		console.log(err);
+		console.error(err);
 		window.alert("Error loading bookmarks");
 	}
 }
