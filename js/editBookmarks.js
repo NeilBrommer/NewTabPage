@@ -162,7 +162,7 @@ function deleteBookmark(e) {
 			groupData.bookmarks = removeFromArray(groupData.bookmarks, bookmarkIndex);
 
 			groupsStore.put(groupData);
-			bookmarkItem.hide(300, "swing", e => bookmarkItem.remove());
+			bookmarkItem.hide(300, "swing", function () { bookmarkItem.remove(); });
 
 			db.close();
 		}
