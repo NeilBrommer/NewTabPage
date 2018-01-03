@@ -17,13 +17,18 @@ function showBookmarkData() {
 	openDBRequest.onsuccess = function (openEvt) {
 		var db = openEvt.target.result;
 
-		db.transaction("Groups").objectStore("Groups").getAll().onsuccess = function (getAllEvt) {
-			var res = getAllEvt.target.result;
-			var data = JSON.stringify(res, null, 4);
-			$("#exportText").val(data);
+		var bookmarkList = [];
+		db.transaction("Groups").objectStore("Groups").openCursor().onsuccess = function (cursorEvt) {
+			var cursor = cursorEvt.target.result;
+			if (cursor) {
+				bookmarkList.push(cursor.value);
+				cursor.continue();
+			} else {
+				var data = JSON.stringify(bookmarkList, null, 4);
+				$("#exportText").val(data);
+				db.close();
+			}
 		}
-
-		db.close();
 	}
 }
 
@@ -48,15 +53,14 @@ function setList(data) {
 	// empty the DB and fill it with the new data
 	var openDBRequest = window.indexedDB.open("bookmarks");
 
-	openDBRequest.onsuccess = function (e) {
-		db = e.target.result;
+	openDBRequest.onsuccess = function (openEvt) {
+		db = openEvt.target.result;
 
 		var groupStore = db.transaction("Groups", "readwrite").objectStore("Groups");
 		groupStore.clear();
 
-		// create the object stores
-		for (let group of data) {
-			groupStore.add(group);
+		for (var i = 0; i < data.length; i++) {
+			groupStore.add(data[i]);
 		}
 
 		$("#importExportModal").modal("hide");
@@ -66,7 +70,10 @@ function setList(data) {
 		loadBookmarks();
 	}
 
-	openDBRequest.onerror = function (err) { console.error(err); }
+	openDBRequest.onerror = function (err) {
+		console.error(err);
+		window.alert("Error importing bookmarks");
+	}
 }
 
 function validateBookmarks(bookmarks) {
@@ -110,8 +117,8 @@ function validateBookmarks(bookmarks) {
 }
 
 function arrayContains(array, searchFor) {
-	for (let item of array) {
-		if (item == searchFor)
+	for (var i = 0; i < array.length; i++) {
+		if (array[i] == searchFor)
 			return true;
 	}
 
