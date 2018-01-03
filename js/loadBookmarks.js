@@ -9,24 +9,30 @@ function loadBookmarks() {
 	openDBRequest.onsuccess = function (openEvt) {
 		db = openEvt.target.result;
 
-		db.transaction("Groups", "readonly").objectStore("Groups").getAll().onsuccess = function (groupsEvt) {
-			var groups = groupsEvt.target.result;
-			groups.sort(function (a, b) {
-				return a.groupIndex - b.groupIndex;
-			});
+		var groupsStore = db.transaction("Groups", "readonly").objectStore("Groups");
+		groupsStore.count().onsuccess = function (countEvt) {
+			var numGroups = countEvt.target.result;
 
-			// use a placholder to prevent problems with sortable
+			// use a placeholder to prevent problems with sortable
 			var cardList = $("#cardList");
-			for (let groupData of groups) {
-				var placeholder = $("<div>").attr("id", "group-" + groupData.groupIndex)
+			for (var i = 0; i < numGroups; i++) {
+				$("<div>").attr("id", "group-" + i)
 					.addClass("bookmarkGroupContainer")
 					.appendTo(cardList);
-				buildCard(groupData.title, groupData.groupIndex, groupData.bookmarks)
-					.appendTo(placeholder);
 			}
 
-			db.close();
-		};
+			groupsStore.openCursor().onsuccess = function (cursorEvt) {
+				var cursor = cursorEvt.target.result;
+				if (cursor) {
+					var groupData = cursor.value;
+					buildCard(groupData.title, groupData.groupIndex, groupData.bookmarks)
+						.appendTo($("#group-" + groupData.groupIndex));
+					cursor.continue();
+				} else {
+					db.close();
+				}
+			}
+		}
 	}
 
 	openDBRequest.onupgradeneeded = function (openEvt) {
