@@ -16,17 +16,16 @@ function populateGroupList() {
 		var db = openEvt.target.result;
 		var groupsStore = db.transaction("Groups", "readwrite").objectStore("Groups");
 
-		groupsStore.getAll().onsuccess = function (getAllEvt) {
-			var groups = getAllEvt.target.result;
-
-			for (let group of groups) {
+		groupsStore.openCursor().onsuccess = function (cursorEvt) {
+			var cursor = cursorEvt.target.result;
+			if (cursor) {
+				var group = cursor.value;
 				combo.append($("<option>")
 					.attr({ "value": group.groupIndex })
 					.text(group.title));
-			}
 
-			$("#createGroup").prop("required", true);
-			db.close();
+				cursor.continue();
+			}
 		}
 	}
 
