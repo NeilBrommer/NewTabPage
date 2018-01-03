@@ -184,29 +184,33 @@ function deleteGroup() {
 		var db = openEvt.target.result;
 		var groupsStore = db.transaction("Groups", "readwrite").objectStore("Groups");
 
-		groupsStore.getAll().onsuccess = function (getAllEvt) {
-			var groups = getAllEvt.target.result;
+		var lastIndex = -1;
+		groupsStore.openCursor().onsuccess = function (cursorEvt) {
+			var cursor = cursorEvt.target.result;
+			if (cursor) {
+				var item = cursor.value;
+				var cardContainer = $("#group-" + item.groupIndex);
 
-			for (let item of groups) {
+				if (item.groupIndex > lastIndex)
+					lastIndex = item.groupIndex;
+
+				if (item.groupIndex == groupIndex) {
+					cardContainer.hide(300, "swing", function () { cardContainer.remove(); });
+				}
+
 				if (item.groupIndex > groupIndex) {
 					item.groupIndex--;
 					groupsStore.put(item);
+
+					$(cardContainer.children()[0]).attr("data-group-index", item.groupIndex);
+					cardContainer.attr("id", "group-" + item.groupIndex);
 				}
+
+				cursor.continue();
+			} else {
+				groupsStore.delete(lastIndex);
+				db.close();
 			}
-
-			groupsStore.delete(groups.length - 1);
-			db.close();
-
-			$("#cardList").children().each(function (index, item) {
-				item = $(item);
-				if (index == groupIndex) {
-					item.hide(300, "swing", e => item.remove());
-				} else if (index > groupIndex) {
-					// modify id and data to reflect new index
-					$(item.children()[0]).attr("data-group-index", index - 1);
-					item.attr("id", "group-" + (index - 1));
-				}
-			});
 		}
 	}
 
