@@ -93,19 +93,20 @@ function bookmarkMoved(dropEvt) {
 			var db = openEvt.target.result;
 			var groupsStore = db.transaction("Groups", "readwrite").objectStore("Groups");
 
-			groupsStore.getAll().onsuccess = function (getAllEvt) {
-				var groups = getAllEvt.target.result;
+			groupsStore.get(oldGroupIndex).onsuccess = function (getOldEvt) {
+				var oldGroupData = getOldEvt.target.result;
 
-				var oldGroupData = groups[oldGroupIndex];
-				var newGroupData = groups[newGroupIndex];
+				groupsStore.get(newGroupIndex).onsuccess = function (getNewEvt) {
+					var newGroupData = getNewEvt.target.result;
 
-				oldGroupData.bookmarks = removeFromArray(oldGroupData.bookmarks, oldIndex);
-				groupsStore.put(oldGroupData);
+					oldGroupData.bookmarks = removeFromArray(oldGroupData.bookmarks, oldIndex);
+					groupsStore.put(oldGroupData);
 
-				newGroupData.bookmarks = addToArray(newGroupData.bookmarks, itemData, newIndex);
-				groupsStore.put(newGroupData);
+					newGroupData.bookmarks = addToArray(newGroupData.bookmarks, itemData, newIndex);
+					groupsStore.put(newGroupData);
 
-				db.close();
+					db.close();
+				}
 			}
 		}
 
