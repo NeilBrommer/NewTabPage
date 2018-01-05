@@ -21,51 +21,19 @@ function groupMoved(dropEvt) {
 
 		openDBRequest.onsuccess = function (openEvt) {
 			var db = openEvt.target.result;
-
 			var groupsStore = db.transaction("Groups", "readwrite").objectStore("Groups");
-			groupsStore.getAll().onsuccess = function (getAllEvt) {
-				var groups = getAllEvt.target.result;
 
-				if (newIndex > oldIndex) {
-					for (let g of groups) {
-						if (g.groupIndex > oldIndex && g.groupIndex <= newIndex) {
-							g.groupIndex--;
-							groupsStore.put(g);
-
-							// modify the group's card
-							var cardContainer = $("#group-" + (g.groupIndex + 1))
-								.attr("id", "group" + g.groupIndex);
-
-							var card = $(cardContainer.children()[0])
-								.attr("data-group-index", g.groupIndex);
-						}
-					}
-				} else { // oldIndex > newIndex
-					for (let g of groups) {
-						if (g.groupIndex < oldIndex && g.groupIndex >= newIndex) {
-							g.groupIndex++;
-							groupsStore.put(g);
-
-							// modify the group's card
-							var cardContainer = $("#group-" + (g.groupIndex - 1));
-							cardContainer.attr("id", "group" + g.groupIndex);
-
-							var card = $(cardContainer.children()[0]);
-							card.attr("data-group-index", g.groupIndex);
-						}
-					}
+			// build an array of all groups
+			var groups = [];
+			groupsStore.openCursor().onsuccess = function (cursorEvt) {
+				var cursor = cursorEvt.target.result;
+				if (cursor) {
+					groups.push(cursor.value);
+					cursor.continue();
+				} else {
+					rearrangeGroups(groupsStore, groups, newIndex, oldIndex);
+					db.close();
 				}
-
-				// update the moved group's data
-				var movedGroupData = groups[oldIndex];
-				movedGroupData.groupIndex = newIndex;
-				groupsStore.put(movedGroupData);
-
-				// update the group's card
-				$(dropEvt.item).attr("id", "group" + newIndex);
-				movedCard.attr("data-group-index", newIndex);
-
-				db.close();
 			}
 		}
 
@@ -74,6 +42,53 @@ function groupMoved(dropEvt) {
 			window.alert("Error moving group");
 		}
 	}
+}
+
+function rearrangeGroups(groupsStore, groups, newIndex, oldIndex) {
+	var movedGroup = $("#group-" + oldIndex);
+
+	if (newIndex > oldIndex) {
+		for (var i = 0; i < groups.length; i++) {
+			var g = groups[i];
+
+			if (g.groupIndex > oldIndex && g.groupIndex <= newIndex) {
+				g.groupIndex--;
+				groupsStore.put(g);
+
+				// modify the group's card
+				var cardContainer = $("#group-" + (g.groupIndex + 1))
+					.attr("id", "group" + g.groupIndex);
+
+				$(cardContainer.children()[0]) // the card
+					.attr("data-group-index", g.groupIndex);
+			}
+		}
+	} else { // oldIndex > newIndex
+		for (var i = 0; i < groups.length; i++) {
+			var g = groups[i];
+
+			if (g.groupIndex < oldIndex && g.groupIndex >= newIndex) {
+				g.groupIndex++;
+				groupsStore.put(g);
+
+				// modify the group's card
+				var cardContainer = $("#group-" + (g.groupIndex - 1))
+					.attr("id", "group" + g.groupIndex);
+
+				$(cardContainer.children()[0]) // the card
+					.attr("data-group-index", g.groupIndex);
+			}
+		}
+	}
+
+	// update the moved group's data
+	var movedGroupData = groups[oldIndex];
+	movedGroupData.groupIndex = newIndex;
+	groupsStore.put(movedGroupData);
+
+	// update the group's card
+	movedGroup.attr("id", "group" + newIndex);
+	$(movedGroup.children()[0]).attr("data-group-index", newIndex);
 }
 
 function bookmarkMoved(dropEvt) {
