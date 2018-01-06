@@ -45,3 +45,12 @@ function setBackground(num) {
 		$(".navbar-toggler").removeClass("toggler-bg-light btn-light").addClass("toggler-bg-dark btn-dark");
 	}
 }
+
+function setBackgroundByTime(hours, mins) {
+	var total = (hours * 60) + mins;
+
+	var period = (24 / backgroundList.length) * 60; // in minutes
+
+	var index = Math.floor(total / period);
+	setBackground(index);
+}
