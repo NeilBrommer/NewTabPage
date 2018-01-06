@@ -9,4 +9,5 @@ I use Danny Care's [Bitday](https://danny.care/portfolio/bitday/) wallpaper set
 for the above site.
 
 This project uses [Bootstrap](https://getbootstrap.com/),
-[JQuery](https://jquery.com/), and [Font Awesome](http://fontawesome.io/).
+[JQuery](https://jquery.com/), [Sortable](https://rubaxa.github.io/Sortable/),
+and [Font Awesome](http://fontawesome.io/).
