@@ -1,6 +1,7 @@
 var backgroundList = [
 	{address: "img/11-Mid-Night.png", dark: true},
 	{address: "img/12-Late-Night.png", dark: true},
+	{address: "img/12-Late-Night.png", dark: true}, // for better timing
 	{address: "img/01-Early-Morning.png", dark: true},
 	{address: "img/02-Mid-Morning.png", dark: false},
 	{address: "img/03-Late-Morning.png", dark: false},
