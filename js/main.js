@@ -55,3 +55,34 @@ function setBackgroundByTime(hours, mins) {
 	var index = Math.floor(total / period);
 	setBackground(index);
 }
+
+function removeFromArray(arr, index) {
+	var newArr = [];
+	arr.forEach(function (item, i) {
+		if (i != index)
+			newArr.push(item);
+	});
+
+	return newArr;
+}
+
+function addToArray(arr, itemToAdd, index) {
+	if (index == arr.length) {
+		arr.push(item);
+		return arr;
+	}
+
+	var newArr = [];
+	arr.forEach(function (item, i) {
+		if (i == index)
+			newArr.push(itemToAdd);
+
+		newArr.push(item);
+	});
+
+	return newArr;
+}
+
+function disableLink(e) {
+	e.preventDefault();
+}
