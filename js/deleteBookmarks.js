@@ -49,7 +49,6 @@ function deleteBookmark(e) {
 	var groupName = item.parent().parent().data("group-name");
 	var groupIndex = item.parent().parent().data("group-index");
 	var bookmarkIndex = item.index();
-	var bookmarkItem = $("#" + groupName + "-" + bookmarkIndex);
 
 	var openDBRequest = window.indexedDB.open("bookmarks");
 
@@ -63,7 +62,7 @@ function deleteBookmark(e) {
 			groupData.bookmarks = removeFromArray(groupData.bookmarks, bookmarkIndex);
 
 			groupsStore.put(groupData);
-			bookmarkItem.hide(300, "swing", function () { bookmarkItem.remove(); });
+			item.hide(300, "swing", function () { bookmarkItem.remove(); });
 
 			db.close();
 		}
